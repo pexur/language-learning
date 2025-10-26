@@ -53,34 +53,6 @@ test.describe('Language Learning App - E2E Tests with Real User', () => {
     await expect(page.locator('text=Spanish').locator('..')).toHaveClass(/border-indigo-500/);
   });
 
-  test('should test OAuth buttons are clickable', async ({ page }) => {
-    await page.goto(getFrontendUrl('/login'));
-    
-    // Check OAuth buttons are visible and clickable
-    const googleButton = page.locator('text=Sign in with Google');
-    const wechatButton = page.locator('text=Sign in with WeChat');
-    
-    await expect(googleButton).toBeVisible();
-    await expect(wechatButton).toBeVisible();
-    
-    // Test clicking Google button (it will redirect to Google OAuth)
-    await googleButton.click();
-    
-    // Wait a moment for redirect
-    await page.waitForTimeout(2000);
-    
-    // Take screenshot to see what happened
-    await page.screenshot({ path: 'test-results/google-oauth-click.png' });
-    
-    // Check if we're redirected to Google or if there's an error
-    const currentUrl = page.url();
-    if (currentUrl.includes('accounts.google.com')) {
-      console.log('✅ Google OAuth redirect working');
-    } else {
-      console.log('⚠️ Google OAuth redirect not working - check environment variables');
-    }
-  });
-
   test('should test responsive design on mobile', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });

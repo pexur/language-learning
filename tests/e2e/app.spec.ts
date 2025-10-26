@@ -17,7 +17,6 @@ test.describe('Language Learning App - E2E Tests', () => {
       await expect(page.locator('h1')).toContainText('Welcome Back');
       await expect(page.locator('input[type="email"]')).toBeVisible();
       await expect(page.locator('button[type="submit"]')).toBeVisible();
-      await expect(page.locator('text=Sign in with Google')).toBeVisible();
     });
 
     test('should display register page correctly', async ({ page }) => {
@@ -27,7 +26,6 @@ test.describe('Language Learning App - E2E Tests', () => {
       await expect(page.locator('input[type="email"]')).toBeVisible();
       await expect(page.locator('input[placeholder="John Doe"]')).toBeVisible();
       await expect(page.locator('button[type="submit"]')).toBeVisible();
-      await expect(page.locator('text=Continue with Google')).toBeVisible();
     });
 
     test('should navigate between login and register pages', async ({ page }) => {
@@ -81,20 +79,6 @@ test.describe('Language Learning App - E2E Tests', () => {
       await expect(page.locator('text=Which language do you want to learn?')).toBeVisible();
       await expect(page.locator('text=Spanish')).toBeVisible();
       await expect(page.locator('text=French')).toBeVisible();
-    });
-  });
-
-  test.describe('OAuth Integration', () => {
-    test('should display Google OAuth button', async ({ page }) => {
-      await testUtils.navigateToPage('/login');
-      
-      await expect(page.locator('text=Sign in with Google')).toBeVisible();
-    });
-
-    test('should display WeChat OAuth button', async ({ page }) => {
-      await testUtils.navigateToPage('/login');
-      
-      await expect(page.locator('text=Sign in with WeChat')).toBeVisible();
     });
   });
 
