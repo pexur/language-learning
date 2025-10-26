@@ -142,24 +142,27 @@ export default function ReviewPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Word
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Translation
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Type
-                    </th>
-                    {Array.from({ length: maxDefinitions }, (_, i) => (
-                      <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Definition {i + 1}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Word
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Translation
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Type
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Example Sentence
+                </th>
+                {Array.from({ length: maxDefinitions }, (_, i) => (
+                  <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Definition {i + 1}
+                  </th>
+                ))}
+              </tr>
+            </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                   {words.map((word, index) => (
                     <tr key={word.wordId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -180,6 +183,15 @@ export default function ReviewPage() {
                       </td>
                       <td className="px-6 py-4">
                         <WordTypeTag word={word} />
+                      </td>
+                      <td className="px-6 py-4">
+                        {word.definitions && word.definitions[0]?.example ? (
+                          <span className="text-sm italic text-gray-600 dark:text-gray-400">
+                            "{word.definitions[0].example}"
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500">—</span>
+                        )}
                       </td>
                       {Array.from({ length: maxDefinitions }, (_, i) => (
                         <td key={i} className="px-6 py-4">
