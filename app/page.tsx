@@ -348,6 +348,42 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
   );
 }
 
+// Component to display word type with decoration
+function WordTypeTag({ word }: { word: Word }) {
+  const getWordType = (word: Word) => {
+    if (!word.definitions || word.definitions.length === 0) {
+      return { type: 'unknown', color: 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300' };
+    }
+
+    const firstDef = word.definitions[0];
+    const meaning = firstDef.meaning.toLowerCase();
+    
+    // Simple word type detection based on definition patterns
+    if (meaning.includes('noun') || meaning.includes('thing') || meaning.includes('person') || meaning.includes('place')) {
+      return { type: 'noun', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
+    }
+    if (meaning.includes('verb') || meaning.includes('action') || meaning.includes('to ')) {
+      return { type: 'verb', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' };
+    }
+    if (meaning.includes('adjective') || meaning.includes('describes')) {
+      return { type: 'adjective', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' };
+    }
+    if (meaning.includes('adverb') || meaning.includes('how')) {
+      return { type: 'adverb', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' };
+    }
+    
+    return { type: 'other', color: 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300' };
+  };
+
+  const { type, color } = getWordType(word);
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+      {type}
+    </span>
+  );
+}
+
 // Phrases Review Table Component
 function PhrasesReviewTable({ phrases, newText, setNewText, onAddPhrase, onDeletePhrase }: {
   phrases: Phrase[];
