@@ -192,6 +192,23 @@ Resources:
             Path: /translate
             Method: POST
 
+  # Conjugation Function
+  ConjugateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/conjugate.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /conjugate
+            Method: POST
+
   # Words Functions
   GetWordsFunction:
     Type: AWS::Serverless::Function

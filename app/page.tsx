@@ -217,6 +217,18 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
   onAddWord: (text: string) => void;
   onDeleteWord: (id: string) => void;
 }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const isVerbClickable = (word: Word) => {
+    return word.wordType === 'verb' && user?.targetLanguage === 'French';
+  };
+
+  const handleWordClick = (word: Word) => {
+    if (isVerbClickable(word)) {
+      router.push(`/conjugate/${encodeURIComponent(word.text)}`);
+    }
+  };
+
   return (
     <div className="p-6">
       {/* Add New Word */}
@@ -283,7 +295,15 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mr-3">
                         {index + 1}.
                       </span>
-                      <span className="text-lg font-semibold text-gray-800 dark:text-white">
+                      <span 
+                        onClick={() => handleWordClick(word)}
+                        className={`text-lg font-semibold ${
+                          isVerbClickable(word) 
+                            ? 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 cursor-pointer hover:underline' 
+                            : 'text-gray-800 dark:text-white'
+                        }`}
+                        title={isVerbClickable(word) ? 'Click to view conjugations' : ''}
+                      >
                         {word.text}
                       </span>
                     </div>

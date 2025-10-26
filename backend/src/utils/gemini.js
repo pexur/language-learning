@@ -91,6 +91,78 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 }
 
 /**
+ * Get French verb conjugations
+ * @param {string} verb - The verb to conjugate
+ * @returns {Promise<Object>} - Conjugation result
+ */
+export async function conjugateFrenchVerb(verb) {
+  const prompt = `You are a French language expert. Conjugate the French verb "${verb}".
+
+Provide the response in the following JSON format:
+{
+  "infinitive": "${verb}",
+  "present": {
+    "je": "conjugated form",
+    "tu": "conjugated form",
+    "il/elle/on": "conjugated form",
+    "nous": "conjugated form",
+    "vous": "conjugated form",
+    "ils/elles": "conjugated form"
+  },
+  "imperfect": {
+    "je": "conjugated form",
+    "tu": "conjugated form",
+    "il/elle/on": "conjugated form",
+    "nous": "conjugated form",
+    "vous": "conjugated form",
+    "ils/elles": "conjugated form"
+  },
+  "future": {
+    "je": "conjugated form",
+    "tu": "conjugated form",
+    "il/elle/on": "conjugated form",
+    "nous": "conjugated form",
+    "vous": "conjugated form",
+    "ils/elles": "conjugated form"
+  },
+  "conditional": {
+    "je": "conjugated form",
+    "tu": "conjugated form",
+    "il/elle/on": "conjugated form",
+    "nous": "conjugated form",
+    "vous": "conjugated form",
+    "ils/elles": "conjugated form"
+  },
+  "presentSubjunctive": {
+    "je": "conjugated form",
+    "tu": "conjugated form",
+    "il/elle/on": "conjugated form",
+    "nous": "conjugated form",
+    "vous": "conjugated form",
+    "ils/elles": "conjugated form"
+  }
+}
+
+IMPORTANT RULES:
+- Provide correct French conjugations for all tenses
+- If the verb doesn't exist or is misspelled, return an error in the message field
+- Return ONLY the JSON object, no additional text or explanation`;
+
+  const response = await invokeGemini(prompt, 3000);
+
+  try {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(response);
+  } catch (error) {
+    console.error('Failed to parse Gemini response:', error);
+    throw new Error('Invalid response format from conjugation service');
+  }
+}
+
+/**
  * Translate a phrase
  * @param {string} phrase - The phrase to translate
  * @param {string} nativeLanguage - User's native language

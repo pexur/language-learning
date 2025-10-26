@@ -78,6 +78,14 @@ export class APIClient {
     });
   }
 
+  // Conjugation
+  async conjugate(verb: string) {
+    return this.request('/conjugate', {
+      method: 'POST',
+      body: JSON.stringify({ verb }),
+    });
+  }
+
   // Words
   async getWords() {
     return this.request('/words');
