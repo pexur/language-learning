@@ -5,7 +5,7 @@ export const testConfig = {
   
   // AWS API Gateway URL (get this from your AWS console or deployment output)
   // Format: https://{api-id}.execute-api.{region}.amazonaws.com/{stage}
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://your-api-id.execute-api.us-west-2.amazonaws.com/dev',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://mbxdcn33vj.execute-api.us-west-2.amazonaws.com/dev',
   
   // Test user credentials (for automated testing)
   testUser: {

@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to fetch user:', error);
       // Only clear token if it's an authentication error (401), not network errors
-      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
         api.clearToken();
         setUser(null);
       } else {
