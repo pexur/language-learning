@@ -52,10 +52,10 @@ export class APIClient {
   }
 
   // Auth
-  async register(email: string, name: string, targetLanguage: string) {
+  async register(email: string, name: string, nativeLanguage: string, targetLanguage: string) {
     return this.request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, name, targetLanguage }),
+      body: JSON.stringify({ email, name, nativeLanguage, targetLanguage }),
     });
   }
 

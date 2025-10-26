@@ -9,10 +9,14 @@ export const handler = async (event) => {
   console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
   try {
     const body = JSON.parse(event.body);
-    const { email, name, targetLanguage, provider = 'email', providerId } = body;
+    const { email, name, nativeLanguage, targetLanguage, provider = 'email', providerId } = body;
 
-    if (!email || !targetLanguage) {
-      return createResponse(400, { error: 'Email and target language are required' });
+    if (!email || !targetLanguage || !nativeLanguage) {
+      return createResponse(400, { error: 'Email, native language, and target language are required' });
+    }
+
+    if (nativeLanguage === targetLanguage) {
+      return createResponse(400, { error: 'Native and target languages must be different' });
     }
 
     // Check if user already exists
@@ -44,6 +48,7 @@ export const handler = async (event) => {
       userId,
       email,
       name: name || email.split('@')[0],
+      nativeLanguage,
       targetLanguage,
       provider,
       providerId: providerId || email,
@@ -71,6 +76,7 @@ export const handler = async (event) => {
         userId: user.userId,
         email: user.email,
         name: user.name,
+        nativeLanguage: user.nativeLanguage,
         targetLanguage: user.targetLanguage,
       },
     });

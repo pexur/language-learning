@@ -35,6 +35,7 @@ export const handler = async (event) => {
         userId: user.userId,
         email: user.email,
         name: user.name,
+        nativeLanguage: user.nativeLanguage,
         targetLanguage: user.targetLanguage,
       },
     });
