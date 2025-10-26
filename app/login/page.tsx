@@ -42,21 +42,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Continue your learning journey
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen flex flex-col">
+        {/* Main Content - Form at top */}
+        <div className="flex-1 flex items-center justify-center p-4 py-12">
+          <div className="w-full max-w-md">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  Welcome Back
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Continue your learning journey
+                </p>
+              </div>
 
-          {/* OAuth Buttons */}
-          <div className="space-y-3 mb-8">
+              {/* OAuth Buttons */}
+              <div className="space-y-3 mb-8">
             <button
               onClick={() => handleOAuthLogin('google')}
               className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-200 hover:scale-105 active:scale-95"
@@ -120,15 +123,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-              Sign up
-            </Link>
-          </p>
+              <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
+                Don't have an account?{' '}
+                <Link href="/register" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
+        
+        {/* Footer at bottom */}
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 }
