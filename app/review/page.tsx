@@ -31,6 +31,14 @@ export default function ReviewPage() {
       setWords(response.words || []);
     } catch (error) {
       console.error('Failed to load words:', error);
+      // If backend is not available, show empty state instead of redirecting
+      if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+        console.warn('Backend not available - showing empty state');
+        setWords([]);
+      } else {
+        // If it's an auth error, let the auth context handle it
+        throw error;
+      }
     } finally {
       setLoading(false);
     }
