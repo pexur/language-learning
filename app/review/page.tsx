@@ -234,31 +234,44 @@ function WordTypeTag({ word }: { word: Word }) {
   );
 }
 
-// Component to display concise definition
+// Component to display concise definitions
 function ConciseDefinition({ word }: { word: Word }) {
   if (!word.definitions || word.definitions.length === 0) {
     return <span className="text-gray-400 dark:text-gray-500">No definition available</span>;
   }
 
-  // Get the most concise definition (shortest one)
-  const conciseDef = word.definitions.reduce((shortest, current) => 
-    current.meaning.length < shortest.meaning.length ? current : shortest
-  );
+  // Process all definitions to make them concise
+  const conciseDefinitions = word.definitions.map(def => {
+    let definition = def.meaning;
+    
+    // Make definition more concise
+    definition = definition
+      .replace(/^(a|an|the)\s+/i, '') // Remove articles
+      .replace(/\s+(noun|verb|adjective|adverb).*$/i, '') // Remove word type indicators
+      .replace(/\s*\(.*?\)/g, '') // Remove parenthetical info
+      .replace(/\s*[;:].*$/g, '') // Remove everything after semicolon/colon
+      .replace(/\s*\.$/, '') // Remove trailing period
+      .trim();
+    
+    return definition;
+  });
 
-  // Extract just the core meaning, removing extra words
-  let definition = conciseDef.meaning;
-  
-  // Remove common prefixes/suffixes to make it more concise
-  definition = definition
-    .replace(/^(a|an|the)\s+/i, '') // Remove articles
-    .replace(/\s+(noun|verb|adjective|adverb).*$/i, '') // Remove word type indicators
-    .replace(/\s*\(.*?\)/g, '') // Remove parenthetical info
-    .replace(/\s*[;:].*$/g, '') // Remove everything after semicolon/colon
-    .trim();
+  // Remove duplicates and filter out empty definitions
+  const uniqueDefinitions = [...new Set(conciseDefinitions)].filter(def => def.length > 0);
+
+  if (uniqueDefinitions.length === 0) {
+    return <span className="text-gray-400 dark:text-gray-500">No definition available</span>;
+  }
 
   return (
-    <span className="text-sm text-gray-700 dark:text-gray-300">
-      {definition}
-    </span>
+    <div className="text-sm text-gray-700 dark:text-gray-300">
+      {uniqueDefinitions.map((definition, index) => (
+        <div key={index} className="mb-1 last:mb-0">
+          <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
+            {definition}
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

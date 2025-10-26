@@ -47,18 +47,24 @@ Provide the response in the following JSON format:
   "definitions": [
     {
       "id": "1",
-      "meaning": "definition of the word in English",
+      "meaning": "concise definition in English (max 3-4 words)",
       "example": "a natural example sentence using the word"
     },
     {
       "id": "2",
-      "meaning": "another definition if applicable",
+      "meaning": "another concise definition if applicable (max 3-4 words)",
       "example": "another example sentence"
     }
   ]
 }
 
-Provide 2-3 definitions if the word has multiple meanings. Make examples natural and practical for language learners.
+IMPORTANT RULES FOR DEFINITIONS:
+- Keep definitions VERY concise (2-4 words maximum)
+- For "combien" → "how many" (not "a French word meaning how many")
+- For "bonjour" → "hello" or "good morning" (not "a French greeting meaning hello")
+- Remove word type indicators (noun, verb, etc.)
+- Focus on core meaning only
+- Provide 2-3 definitions if the word has multiple meanings
 
 IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 
