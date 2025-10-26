@@ -16,40 +16,35 @@ export default function WordsTable({ words, setWords }: WordsTableProps) {
     if (!newWord.trim()) return;
 
     try {
-      const response = await api.createWord(newWord.trim());
-      setWords([response.word, ...words]);
+      // Show loading state for the new word
+      const tempWord = {
+        wordId: 'temp-' + Date.now(),
+        text: newWord.trim(),
+        translation: null,
+        definitions: null,
+        isTranslating: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      
+      setWords([tempWord, ...words]);
+      const wordToAdd = newWord.trim();
       setNewWord('');
+
+      // Create word with auto-translation
+      const response = await api.createWord(wordToAdd);
+      
+      // Replace temp word with actual word
+      setWords(words.map(w => 
+        w.wordId === tempWord.wordId ? response.word : w
+      ));
     } catch (error) {
       console.error('Failed to create word:', error);
+      // Remove temp word on error
+      setWords(words.filter(w => w.wordId !== 'temp-' + Date.now()));
     }
   };
 
-  const translateWord = async (wordId: string) => {
-    setWords(words.map(w =>
-      w.wordId === wordId ? { ...w, isTranslating: true } : w
-    ));
-
-    try {
-      const word = words.find(w => w.wordId === wordId);
-      const data = await api.translate(word!.text, 'word');
-
-      setWords(words.map(w =>
-        w.wordId === wordId
-          ? {
-              ...w,
-              translation: data.translation,
-              definitions: data.definitions,
-              isTranslating: false
-            }
-          : w
-      ));
-    } catch (error) {
-      console.error('Translation error:', error);
-      setWords(words.map(w =>
-        w.wordId === wordId ? { ...w, isTranslating: false } : w
-      ));
-    }
-  };
 
   const deleteWord = async (wordId: string) => {
     try {
@@ -112,27 +107,15 @@ export default function WordsTable({ words, setWords }: WordsTableProps) {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => translateWord(word.wordId)}
-                    disabled={word.isTranslating}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                      word.isTranslating
-                        ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white hover:scale-105 active:scale-95'
-                    }`}
-                  >
-                    {word.isTranslating ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Translating...
-                      </span>
-                    ) : (
-                      '🌐 Translate'
-                    )}
-                  </button>
+                  {word.isTranslating && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Translating...
+                    </div>
+                  )}
                   <button
                     onClick={() => deleteWord(word.wordId)}
                     className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
