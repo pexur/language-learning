@@ -1,9 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import dynamoDB, { PutCommand } from '../../utils/dynamodb.js';
+import dynamoDB, { PutCommand, GetCommand } from '../../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../../utils/auth.js';
 import { localDB, isLocalMode } from '../../utils/localdb.js';
+import { translatePhrase } from '../../utils/gemini.js';
 
 const PHRASES_TABLE = process.env.PHRASES_TABLE;
+const USERS_TABLE = process.env.USERS_TABLE;
 
 export const handler = async (event) => {
   try {
@@ -19,11 +21,46 @@ export const handler = async (event) => {
       return createResponse(400, { error: 'Text is required' });
     }
 
+    // Get user's language preferences for auto-translation
+    let nativeLanguage = 'English';
+    let targetLanguage = 'Spanish';
+    try {
+      if (isLocalMode()) {
+        const userData = await localDB.getUser(user.userId);
+        nativeLanguage = userData?.nativeLanguage || 'English';
+        targetLanguage = userData?.targetLanguage || 'Spanish';
+      } else {
+        const userResult = await dynamoDB.send(
+          new GetCommand({
+            TableName: USERS_TABLE,
+            Key: { userId: user.userId },
+          })
+        );
+        nativeLanguage = userResult.Item?.nativeLanguage || 'English';
+        targetLanguage = userResult.Item?.targetLanguage || 'Spanish';
+      }
+    } catch (error) {
+      console.warn('Could not get user language preferences, using defaults:', error);
+    }
+
+    // Auto-translate the phrase if no translation provided
+    let finalTranslation = translation;
+    if (!translation) {
+      try {
+        const translationResult = await translatePhrase(text, nativeLanguage, targetLanguage);
+        finalTranslation = translationResult.translation;
+      } catch (error) {
+        console.error('Auto-translation failed:', error);
+        // Continue without translation if auto-translation fails
+        finalTranslation = null;
+      }
+    }
+
     const phrase = {
       userId: user.userId,
       phraseId: uuidv4(),
       text,
-      translation: translation || null,
+      translation: finalTranslation,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
