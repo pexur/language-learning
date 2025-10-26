@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Word, Phrase } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
+import Footer from '@/components/Footer';
 
 type TableView = 'words' | 'phrases';
 
@@ -76,9 +77,9 @@ export default function Home() {
     setWords([tempWord, ...words]);
     try {
       const response = await api.createWord(wordText.trim());
-      setWords(words.map(w => w.wordId === tempWord.wordId ? response.word : w));
+      setWords(prevWords => prevWords.map(w => w.wordId === tempWord.wordId ? response.word : w));
     } catch (error) {
-      setWords(words.filter(w => w.wordId !== tempWord.wordId));
+      setWords(prevWords => prevWords.filter(w => w.wordId !== tempWord.wordId));
     }
   };
 
@@ -86,7 +87,7 @@ export default function Home() {
     if (!phraseText.trim()) return;
     try {
       const response = await api.createPhrase(phraseText.trim());
-      setPhrases([response.phrase, ...phrases]);
+      setPhrases(prevPhrases => [response.phrase, ...prevPhrases]);
     } catch (error) {
       console.error('Failed to create phrase:', error);
     }
@@ -95,7 +96,7 @@ export default function Home() {
   const deleteWord = async (wordId: string) => {
     try {
       await api.deleteWord(wordId);
-      setWords(words.filter(w => w.wordId !== wordId));
+      setWords(prevWords => prevWords.filter(w => w.wordId !== wordId));
     } catch (error) {
       console.error('Failed to delete word:', error);
     }
@@ -104,7 +105,7 @@ export default function Home() {
   const deletePhrase = async (phraseId: string) => {
     try {
       await api.deletePhrase(phraseId);
-      setPhrases(phrases.filter(p => p.phraseId !== phraseId));
+      setPhrases(prevPhrases => prevPhrases.filter(p => p.phraseId !== phraseId));
     } catch (error) {
       console.error('Failed to delete phrase:', error);
     }
@@ -188,6 +189,7 @@ export default function Home() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
@@ -229,12 +231,23 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
           type="text"
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && onAddWord(newText) && setNewText('')}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const text = newText;
+              setNewText('');
+              onAddWord(text);
+            }
+          }}
           placeholder="Enter a new word..."
           className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:outline-none transition-colors"
         />
         <button
-          onClick={() => onAddWord(newText) && setNewText('')}
+          onClick={() => {
+            const text = newText;
+            setNewText('');
+            onAddWord(text);
+          }}
           className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
         >
           Add
@@ -330,12 +343,23 @@ function PhrasesReviewTable({ phrases, newText, setNewText, onAddPhrase, onDelet
           type="text"
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && onAddPhrase(newText) && setNewText('')}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const text = newText;
+              setNewText('');
+              onAddPhrase(text);
+            }
+          }}
           placeholder="Enter a new phrase..."
           className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:outline-none transition-colors"
         />
         <button
-          onClick={() => onAddPhrase(newText) && setNewText('')}
+          onClick={() => {
+            const text = newText;
+            setNewText('');
+            onAddPhrase(text);
+          }}
           className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
         >
           Add

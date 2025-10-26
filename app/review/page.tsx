@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { Word } from '@/types';
+import Footer from '@/components/Footer';
 
 export default function ReviewPage() {
   const router = useRouter();
@@ -216,6 +217,7 @@ export default function ReviewPage() {
           </a>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

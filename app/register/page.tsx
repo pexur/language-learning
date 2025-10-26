@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { POPULAR_LANGUAGES } from '@/lib/languages';
 import { api } from '@/lib/api';
+import Footer from '@/components/Footer';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -199,6 +200,7 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
