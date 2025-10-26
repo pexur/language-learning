@@ -272,9 +272,11 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Word</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Translation</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Type</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Example</th>
                 {Array.from({ length: maxDefinitions }, (_, i) => (
                   <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Definition {i + 1}
+                    Def {i + 1}
                   </th>
                 ))}
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
@@ -298,12 +300,31 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
                       {word.translation || '—'}
                     </span>
                   </td>
+                  <td className="px-6 py-4">
+                    <WordTypeTag word={word} />
+                  </td>
+                  <td className="px-6 py-4">
+                    {word.definitions && word.definitions[0]?.example ? (
+                      <span className="text-sm italic text-gray-600 dark:text-gray-400">
+                        "{word.definitions[0].example}"
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 dark:text-gray-500">—</span>
+                    )}
+                  </td>
                   {Array.from({ length: maxDefinitions }, (_, i) => (
                     <td key={i} className="px-6 py-4">
                       {word.definitions && word.definitions[i] ? (
-                        <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
-                          {word.definitions[i].meaning}
-                        </span>
+                        <div>
+                          <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
+                            {word.definitions[i].meaning}
+                          </span>
+                          {word.definitions[i].example && (
+                            <div className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">
+                              {word.definitions[i].example}
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-gray-400 dark:text-gray-500">—</span>
                       )}
