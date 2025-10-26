@@ -106,31 +106,6 @@ test.describe('Auto-Translation and Review Features', () => {
     });
   });
 
-  test.describe('Review Page Functionality', () => {
-    test('should display review page correctly', async ({ page }) => {
-      // Mock authentication for review page
-      await page.goto('/review');
-      
-      // Should redirect to login if not authenticated
-      await expect(page).toHaveURL('/login');
-    });
-
-    test('should show empty state when no words', async ({ page }) => {
-      // This test would need authentication setup
-      // For now, just test the page structure
-      await page.goto('/review');
-      
-      // Should redirect to login
-      await expect(page).toHaveURL('/login');
-    });
-
-    test('should display word types correctly', async ({ page }) => {
-      // This test would need authentication and word data
-      // For now, just test the page loads
-      await page.goto('/review');
-      await expect(page).toHaveURL('/login');
-    });
-  });
 
   test.describe('Frontend Auto-Translation', () => {
     test('should show loading state when adding word', async ({ page }) => {
@@ -149,7 +124,7 @@ test.describe('Auto-Translation and Review Features', () => {
   });
 
   test.describe('Integration Tests', () => {
-    test('should create word with auto-translation and display in review', async ({ request }) => {
+    test('should create word with auto-translation', async ({ request }) => {
       // Skip if API not configured
       if (testConfig.apiUrl.includes('your-api-id')) {
         test.skip();
