@@ -1,0 +1,27 @@
+{
+  "name": "language-learning-backend",
+  "version": "1.0.0",
+  "description": "AWS SAM backend for language learning app",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "sam build",
+    "deploy": "sam deploy --guided",
+    "deploy:fast": "sam build && sam deploy",
+    "local": "sam local start-api --env-vars env.json",
+    "logs": "sam logs -n",
+    "delete": "sam delete",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@aws-sdk/client-dynamodb": "^3.709.0",
+    "@aws-sdk/lib-dynamodb": "^3.709.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {}
+}

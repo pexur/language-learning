@@ -1,0 +1,377 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Language Learning API - Serverless backend
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Deployment stage
+
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT secret key for token generation
+
+  GoogleClientId:
+    Type: String
+    Default: ''
+    Description: Google OAuth client ID
+
+  GoogleClientSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Google OAuth client secret
+
+  WechatAppId:
+    Type: String
+    Default: ''
+    Description: WeChat app ID
+
+  WechatAppSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: WeChat app secret
+
+  FrontendUrl:
+    Type: String
+    Default: 'http://localhost:3000'
+    Description: Frontend URL for CORS
+
+  GoogleAIApiKey:
+    Type: String
+    NoEcho: true
+    Description: Google AI API key for Gemini
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        USERS_TABLE: !Ref UsersTable
+        WORDS_TABLE: !Ref WordsTable
+        PHRASES_TABLE: !Ref PhrasesTable
+        JWT_SECRET: !Ref JwtSecret
+        GOOGLE_CLIENT_ID: !Ref GoogleClientId
+        GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+        WECHAT_APP_ID: !Ref WechatAppId
+        WECHAT_APP_SECRET: !Ref WechatAppSecret
+        FRONTEND_URL: !Ref FrontendUrl
+        GOOGLE_AI_API_KEY: !Ref GoogleAIApiKey
+
+Resources:
+  # HTTP API
+  LanguageLearningApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref FrontendUrl
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowCredentials: true
+        MaxAge: 300
+
+  # Authentication Functions
+  GoogleOAuthCallbackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/auth/googleOAuth.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /auth/google/callback
+            Method: GET
+
+  WechatOAuthCallbackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/auth/wechatOAuth.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /auth/wechat/callback
+            Method: GET
+
+  RegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/auth/register.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /auth/register
+            Method: POST
+
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/auth/login.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /auth/login
+            Method: POST
+
+  GetUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/auth/getUser.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /auth/me
+            Method: GET
+
+  # Translation Function
+  TranslateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/translate.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /translate
+            Method: POST
+
+  # Words Functions
+  GetWordsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/words/getWords.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /words
+            Method: GET
+
+  CreateWordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/words/createWord.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /words
+            Method: POST
+
+  DeleteWordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/words/deleteWord.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /words/{id}
+            Method: DELETE
+
+  # Phrases Functions
+  GetPhrasesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/phrases/getPhrases.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PhrasesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /phrases
+            Method: GET
+
+  CreatePhraseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/phrases/createPhrase.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PhrasesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /phrases
+            Method: POST
+
+  DeletePhraseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/phrases/deletePhrase.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PhrasesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /phrases/{id}
+            Method: DELETE
+
+  # DynamoDB Tables
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'language-learning-api-users-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  WordsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'language-learning-api-words-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: wordId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: wordId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: UserCreatedAtIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  PhrasesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'language-learning-api-phrases-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: phraseId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: phraseId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: UserCreatedAtIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${LanguageLearningApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}'
+
+  UsersTableName:
+    Description: Users DynamoDB table name
+    Value: !Ref UsersTable
+
+  WordsTableName:
+    Description: Words DynamoDB table name
+    Value: !Ref WordsTable
+
+  PhrasesTableName:
+    Description: Phrases DynamoDB table name
+    Value: !Ref PhrasesTable

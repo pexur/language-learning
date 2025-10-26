@@ -1,0 +1,241 @@
+service: language-learning-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    USERS_TABLE: ${self:service}-users-${self:provider.stage}
+    WORDS_TABLE: ${self:service}-words-${self:provider.stage}
+    PHRASES_TABLE: ${self:service}-phrases-${self:provider.stage}
+    JWT_SECRET: ${env:JWT_SECRET, 'dev-secret-key-change-in-production-12345678'}
+    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID, ''}
+    GOOGLE_CLIENT_SECRET: ${env:GOOGLE_CLIENT_SECRET, ''}
+    WECHAT_APP_ID: ${env:WECHAT_APP_ID, ''}
+    WECHAT_APP_SECRET: ${env:WECHAT_APP_SECRET, ''}
+    FRONTEND_URL: ${env:FRONTEND_URL, 'http://localhost:3000'}
+    GOOGLE_AI_API_KEY: ${env:GOOGLE_AI_API_KEY, ''}
+
+  iam:
+    role:
+      statements:
+        # DynamoDB permissions
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !GetAtt UsersTable.Arn
+            - !GetAtt WordsTable.Arn
+            - !GetAtt PhrasesTable.Arn
+            - !Join ['', [!GetAtt UsersTable.Arn, '/index/*']]
+            - !Join ['', [!GetAtt WordsTable.Arn, '/index/*']]
+            - !Join ['', [!GetAtt PhrasesTable.Arn, '/index/*']]
+
+  httpApi:
+    cors:
+      allowedOrigins:
+        - ${self:provider.environment.FRONTEND_URL}
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+
+functions:
+  # Authentication
+  googleOAuthCallback:
+    handler: src/functions/auth/googleOAuth.handler
+    events:
+      - httpApi:
+          path: /auth/google/callback
+          method: get
+
+  wechatOAuthCallback:
+    handler: src/functions/auth/wechatOAuth.handler
+    events:
+      - httpApi:
+          path: /auth/wechat/callback
+          method: get
+
+  register:
+    handler: src/functions/auth/register.handler
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+
+  login:
+    handler: src/functions/auth/login.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+
+  getUser:
+    handler: src/functions/auth/getUser.handler
+    events:
+      - httpApi:
+          path: /auth/me
+          method: get
+
+  # Translation
+  translate:
+    handler: src/functions/translate.handler
+    timeout: 30
+    events:
+      - httpApi:
+          path: /translate
+          method: post
+
+  # Words
+  getWords:
+    handler: src/functions/words/getWords.handler
+    events:
+      - httpApi:
+          path: /words
+          method: get
+
+  createWord:
+    handler: src/functions/words/createWord.handler
+    events:
+      - httpApi:
+          path: /words
+          method: post
+
+  deleteWord:
+    handler: src/functions/words/deleteWord.handler
+    events:
+      - httpApi:
+          path: /words/{id}
+          method: delete
+
+  # Phrases
+  getPhrases:
+    handler: src/functions/phrases/getPhrases.handler
+    events:
+      - httpApi:
+          path: /phrases
+          method: get
+
+  createPhrase:
+    handler: src/functions/phrases/createPhrase.handler
+    events:
+      - httpApi:
+          path: /phrases
+          method: post
+
+  deletePhrase:
+    handler: src/functions/phrases/deletePhrase.handler
+    events:
+      - httpApi:
+          path: /phrases/{id}
+          method: delete
+
+resources:
+  Resources:
+    # DynamoDB Tables
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    WordsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.WORDS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: wordId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: N
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: wordId
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: UserCreatedAtIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    PhrasesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PHRASES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: phraseId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: N
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: phraseId
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: UserCreatedAtIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
+
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: false
+      convertEmptyValues: true
+
+plugins:
+  - serverless-dynamodb
+  - serverless-offline
