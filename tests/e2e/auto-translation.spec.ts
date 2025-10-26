@@ -31,12 +31,12 @@ test.describe('Auto-Translation and Review Features', () => {
 
       const response = await request.post(getApiEndpoint('/words'), {
         headers: {
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         },
-        data: {
-          text: 'hello',
-          language: 'en'
-        }
+        data: JSON.stringify({
+          text: 'hello'
+        })
       });
 
       expect(response.status()).toBe(201);
@@ -58,11 +58,11 @@ test.describe('Auto-Translation and Review Features', () => {
 
       const response = await request.post(getApiEndpoint('/words'), {
         headers: {
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         },
-        data: {
+        data: JSON.stringify({
           text: 'goodbye',
-          language: 'en',
           translation: 'adios',
           definitions: [
             {
@@ -71,7 +71,7 @@ test.describe('Auto-Translation and Review Features', () => {
               example: 'Goodbye, see you tomorrow!'
             }
           ]
-        }
+        })
       });
 
       expect(response.status()).toBe(201);
@@ -91,12 +91,12 @@ test.describe('Auto-Translation and Review Features', () => {
       // Test with a very unusual word that might fail translation
       const response = await request.post(getApiEndpoint('/words'), {
         headers: {
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         },
-        data: {
-          text: 'xyzqwerty123',
-          language: 'en'
-        }
+        data: JSON.stringify({
+          text: 'xyzqwerty123'
+        })
       });
 
       expect(response.status()).toBe(201);
@@ -161,12 +161,12 @@ test.describe('Auto-Translation and Review Features', () => {
       // Create a word
       const createResponse = await request.post(getApiEndpoint('/words'), {
         headers: {
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         },
-        data: {
-          text: 'water',
-          language: 'en'
-        }
+        data: JSON.stringify({
+          text: 'water'
+        })
       });
 
       expect(createResponse.status()).toBe(201);
@@ -200,12 +200,12 @@ test.describe('Auto-Translation and Review Features', () => {
       for (const word of testWords) {
         const response = await request.post(getApiEndpoint('/words'), {
           headers: {
-            'Authorization': `Bearer ${authToken}`
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
           },
-          data: {
-            text: word,
-            language: 'en'
-          }
+          data: JSON.stringify({
+            text: word
+          })
         });
 
         expect(response.status()).toBe(201);

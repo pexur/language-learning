@@ -43,12 +43,13 @@ test.describe('Language Learning App - E2E Tests with Real User', () => {
     await expect(page.locator('h1')).toContainText('Create Your Account');
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[placeholder="John Doe"]')).toBeVisible();
-    await expect(page.locator('text=Which language do you want to learn?')).toBeVisible();
+    await expect(page.locator('text=Your Native Language')).toBeVisible();
+    await expect(page.locator('text=Language You Want to Learn')).toBeVisible();
     await expect(page.locator('text=Spanish')).toBeVisible();
     await expect(page.locator('text=French')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
     
-    // Test language selection
+    // Test language selection (native language)
     await page.click('text=Spanish');
     await expect(page.locator('text=Spanish').locator('..')).toHaveClass(/border-indigo-500/);
   });

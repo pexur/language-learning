@@ -75,8 +75,9 @@ test.describe('Language Learning App - E2E Tests', () => {
     test('should display language selection in register form', async ({ page }) => {
       await testUtils.navigateToPage('/register');
       
-      // Check if language selection buttons are visible
-      await expect(page.locator('text=Which language do you want to learn?')).toBeVisible();
+      // Check if both language selection sections are visible
+      await expect(page.locator('text=Your Native Language')).toBeVisible();
+      await expect(page.locator('text=Language You Want to Learn')).toBeVisible();
       await expect(page.locator('text=Spanish')).toBeVisible();
       await expect(page.locator('text=French')).toBeVisible();
     });
