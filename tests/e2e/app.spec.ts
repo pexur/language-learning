@@ -78,8 +78,8 @@ test.describe('Language Learning App - E2E Tests', () => {
       // Check if both language selection sections are visible
       await expect(page.locator('text=Your Native Language')).toBeVisible();
       await expect(page.locator('text=Language You Want to Learn')).toBeVisible();
-      await expect(page.locator('text=Spanish')).toBeVisible();
-      await expect(page.locator('text=French')).toBeVisible();
+      await expect(page.locator('text=Spanish').first()).toBeVisible();
+      await expect(page.locator('text=French').first()).toBeVisible();
     });
   });
 
