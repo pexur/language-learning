@@ -58,7 +58,7 @@ test.describe('Language Learning App - E2E Tests', () => {
       // Check login form elements
       await expect(page.locator('input[type="email"]')).toBeVisible();
       await expect(page.locator('button[type="submit"]')).toBeVisible();
-      await expect(page.locator('text=Sign In')).toBeVisible();
+      await expect(page.locator('button[type="submit"]')).toContainText('Sign In');
     });
 
     test('should display register form correctly', async ({ page }) => {
