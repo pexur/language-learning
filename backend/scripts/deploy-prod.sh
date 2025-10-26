@@ -27,6 +27,7 @@ get_param() {
     aws ssm get-parameter \
         --name "$PREFIX/$name" \
         --region $REGION \
+        --with-decryption \
         --query 'Parameter.Value' \
         --output text 2>/dev/null || echo "$default"
 }

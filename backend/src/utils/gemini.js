@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Google Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 
-const MODEL = 'gemini-1.5-flash'; // Fast and cost-effective model for translations
+const MODEL = 'gemini-2.5-flash-lite'; // Cheapest Gemini 2.5 model, perfect for translations
 
 /**
  * Invoke Gemini via Google AI API
