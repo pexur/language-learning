@@ -47,6 +47,7 @@ export const handler = async (event) => {
     let finalTranslation = translation;
     let finalDefinitions = definitions;
     let wordType = null;
+    let gender = null;
     
     if (!translation) {
       try {
@@ -54,6 +55,7 @@ export const handler = async (event) => {
         finalTranslation = translationResult.translation;
         finalDefinitions = translationResult.definitions;
         wordType = translationResult.wordType;
+        gender = translationResult.gender;
       } catch (error) {
         console.error('Auto-translation failed:', error);
         // Continue without translation if auto-translation fails
@@ -68,6 +70,7 @@ export const handler = async (event) => {
       text,
       translation: finalTranslation,
       wordType: wordType,
+      gender: gender,
       definitions: finalDefinitions,
       createdAt: Date.now(),
       updatedAt: Date.now(),

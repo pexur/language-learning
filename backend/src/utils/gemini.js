@@ -48,6 +48,7 @@ Provide the response in the following JSON format:
 {
   "translation": "the translated word in ${targetLanguage} (corrected if misspelled)",
   "wordType": "noun|verb|adjective|adverb|other",
+  "gender": "m|f|neutral (only for nouns in languages with gender, otherwise omit)",
   "definitions": [
     {
       "id": "1",
@@ -65,6 +66,9 @@ Provide the response in the following JSON format:
 IMPORTANT RULES:
 - Keep definitions concise (3-5 words maximum) but include the word type explicitly
 - Example format: "noun: a person who teaches" or "verb: to acquire knowledge"
+- If the word is a noun in a language with gender (Spanish, French, Italian, etc.), include the gender field
+- For Spanish: use "f" for feminine (la mesa), "m" for masculine (el libro)
+- For French: use "f" for feminine (la table), "m" for masculine (le livre)
 - If the word is misspelled, correct it in the translation field
 - Provide 2-3 definitions if the word has multiple meanings
 - Examples should be natural sentences in ${targetLanguage}

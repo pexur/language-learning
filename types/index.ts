@@ -10,6 +10,7 @@ export interface Word {
   text: string;
   translation?: string;
   wordType?: string;
+  gender?: string;
   definitions?: Definition[];
   isTranslating?: boolean;
   createdAt: number;

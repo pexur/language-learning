@@ -344,9 +344,16 @@ function WordTypeTag({ word }: { word: Word }) {
     // First, try to use the wordType field if available
     if (word.wordType) {
       const type = word.wordType.toLowerCase();
+      let displayType = type;
+      
+      // If it's a noun and we have gender information, add it
+      if (type === 'noun' && word.gender) {
+        displayType = word.gender === 'f' ? 'f.n.' : word.gender === 'm' ? 'm.n.' : type;
+      }
+      
       switch(type) {
         case 'noun':
-          return { type: 'noun', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
+          return { type: displayType, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
         case 'verb':
           return { type: 'verb', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' };
         case 'adjective':
@@ -364,8 +371,15 @@ function WordTypeTag({ word }: { word: Word }) {
     const firstDef = word.definitions[0];
     const meaning = firstDef.meaning.toLowerCase();
     
+    let displayType = 'noun';
     if (meaning.includes('noun:')) {
-      return { type: 'noun', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
+      // Check if it's feminine or masculine in the meaning
+      if (meaning.includes('(f)') || meaning.includes('feminine')) {
+        displayType = 'f.n.';
+      } else if (meaning.includes('(m)') || meaning.includes('masculine')) {
+        displayType = 'm.n.';
+      }
+      return { type: displayType, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
     }
     if (meaning.includes('verb:')) {
       return { type: 'verb', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' };
