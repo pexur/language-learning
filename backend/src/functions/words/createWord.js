@@ -21,11 +21,13 @@ export const handler = async (event) => {
       return createResponse(400, { error: 'Text is required' });
     }
 
-    // Get user's target language for auto-translation
-    let targetLanguage = 'Spanish'; // default
+    // Get user's language preferences for auto-translation
+    let nativeLanguage = 'English';
+    let targetLanguage = 'Spanish';
     try {
       if (isLocalMode()) {
         const userData = await localDB.getUser(user.userId);
+        nativeLanguage = userData?.nativeLanguage || 'English';
         targetLanguage = userData?.targetLanguage || 'Spanish';
       } else {
         const userResult = await dynamoDB.send(
@@ -34,10 +36,11 @@ export const handler = async (event) => {
             Key: { userId: user.userId },
           })
         );
+        nativeLanguage = userResult.Item?.nativeLanguage || 'English';
         targetLanguage = userResult.Item?.targetLanguage || 'Spanish';
       }
     } catch (error) {
-      console.warn('Could not get user target language, using default:', error);
+      console.warn('Could not get user language preferences, using defaults:', error);
     }
 
     // Auto-translate the word if no translation provided
@@ -46,7 +49,7 @@ export const handler = async (event) => {
     
     if (!translation) {
       try {
-        const translationResult = await translateWord(text, targetLanguage);
+        const translationResult = await translateWord(text, nativeLanguage, targetLanguage);
         finalTranslation = translationResult.translation;
         finalDefinitions = translationResult.definitions;
       } catch (error) {

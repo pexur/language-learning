@@ -33,13 +33,16 @@ export async function invokeGemini(prompt, maxTokens = 4000) {
 /**
  * Translate a word with definitions and examples
  * @param {string} word - The word to translate
+ * @param {string} nativeLanguage - User's native language
  * @param {string} targetLanguage - Target language (e.g., 'Spanish', 'French')
  * @returns {Promise<Object>} - Translation result with definitions
  */
-export async function translateWord(word, targetLanguage) {
-  const prompt = `You are a professional translator and language teacher. Translate the word "${word}" to ${targetLanguage}.
+export async function translateWord(word, nativeLanguage, targetLanguage) {
+  const prompt = `You are a professional translator and language teacher. 
 
-First, detect what language "${word}" is in. Then translate it to ${targetLanguage}.
+The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
+
+Translate the word "${word}" from ${nativeLanguage} to ${targetLanguage}. Provide the translation and explain it in a way that helps someone learning ${targetLanguage}.
 
 Provide the response in the following JSON format:
 {
@@ -86,13 +89,16 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 /**
  * Translate a phrase
  * @param {string} phrase - The phrase to translate
+ * @param {string} nativeLanguage - User's native language
  * @param {string} targetLanguage - Target language
  * @returns {Promise<Object>} - Translation result
  */
-export async function translatePhrase(phrase, targetLanguage) {
+export async function translatePhrase(phrase, nativeLanguage, targetLanguage) {
   const prompt = `You are a professional translator.
 
-First, detect what language the phrase "${phrase}" is in. Then translate it to ${targetLanguage}.
+The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
+
+Translate the phrase "${phrase}" from ${nativeLanguage} to ${targetLanguage}.
 
 Provide the response in the following JSON format:
 {

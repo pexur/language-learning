@@ -24,7 +24,7 @@ export const handler = async (event) => {
       return createResponse(404, { error: 'User not found' });
     }
 
-    const targetLanguage = userResult.Item.targetLanguage;
+    const { targetLanguage, nativeLanguage } = userResult.Item;
 
     const body = JSON.parse(event.body);
     const { text, type } = body;
@@ -36,9 +36,9 @@ export const handler = async (event) => {
     let result;
 
     if (type === 'word') {
-      result = await translateWord(text, targetLanguage);
+      result = await translateWord(text, nativeLanguage, targetLanguage);
     } else if (type === 'phrase') {
-      result = await translatePhrase(text, targetLanguage);
+      result = await translatePhrase(text, nativeLanguage, targetLanguage);
     } else {
       return createResponse(400, { error: 'Invalid type. Must be "word" or "phrase"' });
     }
