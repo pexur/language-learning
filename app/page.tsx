@@ -273,7 +273,6 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Word</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Translation</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Example</th>
                 {Array.from({ length: maxDefinitions }, (_, i) => (
                   <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Def {i + 1}
@@ -302,15 +301,6 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
                   </td>
                   <td className="px-6 py-4">
                     <WordTypeTag word={word} />
-                  </td>
-                  <td className="px-6 py-4">
-                    {word.definitions && word.definitions[0]?.example ? (
-                      <span className="text-sm italic text-gray-600 dark:text-gray-400">
-                        "{word.definitions[0].example}"
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 dark:text-gray-500">—</span>
-                    )}
                   </td>
                   {Array.from({ length: maxDefinitions }, (_, i) => (
                     <td key={i} className="px-6 py-4">
