@@ -52,6 +52,12 @@ export default function ReviewPage() {
   const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
   const isNetworkError = hasToken && !user && !isLoading;
 
+  // Calculate maximum number of definitions to determine column count
+  const maxDefinitions = words.reduce((max, word) => {
+    const defCount = word.definitions ? word.definitions.length : 0;
+    return Math.max(max, defCount);
+  }, 0);
+
   if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -147,9 +153,11 @@ export default function ReviewPage() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Type
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Definition
-                    </th>
+                    {Array.from({ length: maxDefinitions }, (_, i) => (
+                      <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Definition {i + 1}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
@@ -173,9 +181,11 @@ export default function ReviewPage() {
                       <td className="px-6 py-4">
                         <WordTypeTag word={word} />
                       </td>
-                      <td className="px-6 py-4">
-                        <ConciseDefinition word={word} />
-                      </td>
+                      {Array.from({ length: maxDefinitions }, (_, i) => (
+                        <td key={i} className="px-6 py-4">
+                          <SingleDefinition word={word} index={i} />
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
@@ -234,44 +244,30 @@ function WordTypeTag({ word }: { word: Word }) {
   );
 }
 
-// Component to display concise definitions
-function ConciseDefinition({ word }: { word: Word }) {
-  if (!word.definitions || word.definitions.length === 0) {
-    return <span className="text-gray-400 dark:text-gray-500">No definition available</span>;
+// Component to display a single definition in a column
+function SingleDefinition({ word, index }: { word: Word; index: number }) {
+  if (!word.definitions || word.definitions.length === 0 || index >= word.definitions.length) {
+    return <span className="text-gray-400 dark:text-gray-500">—</span>;
   }
 
-  // Process all definitions to make them concise
-  const conciseDefinitions = word.definitions.map(def => {
-    let definition = def.meaning;
-    
-    // Make definition more concise
-    definition = definition
-      .replace(/^(a|an|the)\s+/i, '') // Remove articles
-      .replace(/\s+(noun|verb|adjective|adverb).*$/i, '') // Remove word type indicators
-      .replace(/\s*\(.*?\)/g, '') // Remove parenthetical info
-      .replace(/\s*[;:].*$/g, '') // Remove everything after semicolon/colon
-      .replace(/\s*\.$/, '') // Remove trailing period
-      .trim();
-    
-    return definition;
-  });
+  let definition = word.definitions[index].meaning;
+  
+  // Make definition more concise
+  definition = definition
+    .replace(/^(a|an|the)\s+/i, '') // Remove articles
+    .replace(/\s+(noun|verb|adjective|adverb).*$/i, '') // Remove word type indicators
+    .replace(/\s*\(.*?\)/g, '') // Remove parenthetical info
+    .replace(/\s*[;:].*$/g, '') // Remove everything after semicolon/colon
+    .replace(/\s*\.$/, '') // Remove trailing period
+    .trim();
 
-  // Remove duplicates and filter out empty definitions
-  const uniqueDefinitions = [...new Set(conciseDefinitions)].filter(def => def.length > 0);
-
-  if (uniqueDefinitions.length === 0) {
-    return <span className="text-gray-400 dark:text-gray-500">No definition available</span>;
+  if (definition.length === 0) {
+    return <span className="text-gray-400 dark:text-gray-500">—</span>;
   }
 
   return (
-    <div className="text-sm text-gray-700 dark:text-gray-300">
-      {uniqueDefinitions.map((definition, index) => (
-        <div key={index} className="mb-1 last:mb-0">
-          <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
-            {definition}
-          </span>
-        </div>
-      ))}
-    </div>
+    <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
+      {definition}
+    </span>
   );
 }
