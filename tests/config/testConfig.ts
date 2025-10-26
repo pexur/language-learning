@@ -1,7 +1,7 @@
 // Test configuration for Playwright with AWS API Gateway
 export const testConfig = {
   // Frontend URL (where Next.js is running)
-  frontendUrl: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001',
+  frontendUrl: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
   
   // AWS API Gateway URL (get this from your AWS console or deployment output)
   // Format: https://{api-id}.execute-api.{region}.amazonaws.com/{stage}
