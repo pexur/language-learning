@@ -114,6 +114,13 @@ export class APIClient {
     });
   }
 
+  // Exercises
+  async generateExercises() {
+    return this.request('/exercises', {
+      method: 'POST',
+    });
+  }
+
   // OAuth URLs
   getGoogleOAuthURL() {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;

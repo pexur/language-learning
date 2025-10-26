@@ -112,8 +112,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
+    <div>
+      <div className="container mx-auto px-4 py-8 lg:pl-8">
         {/* Header */}
         <header className="mb-8">
           <div className="flex justify-between items-center mb-6">

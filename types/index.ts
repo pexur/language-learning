@@ -26,3 +26,25 @@ export interface Phrase {
   createdAt: number;
   updatedAt?: number;
 }
+
+export interface Exercise {
+  id: string;
+  type: 'word_to_target' | 'word_to_native' | 'sentence';
+  question: string;
+  correctAnswer: string;
+  hint?: string;
+}
+
+export interface ExerciseSet {
+  words: Exercise[]; // 10 exercises
+  wordsReverse: Exercise[]; // 10 exercises
+  sentences: Exercise[]; // 10 exercises with sentence structure
+}
+
+export interface ExerciseState {
+  [exerciseId: string]: {
+    userAnswer: string;
+    isCorrect: boolean | null;
+    showResult: boolean;
+  };
+}

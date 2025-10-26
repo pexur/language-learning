@@ -290,6 +290,27 @@ Resources:
             Path: /phrases/{id}
             Method: DELETE
 
+  # Exercise Functions
+  GenerateExercisesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/generateExercises.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PhrasesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /exercises
+            Method: POST
+
   # DynamoDB Tables
   UsersTable:
     Type: AWS::DynamoDB::Table
