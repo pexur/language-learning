@@ -15,7 +15,11 @@ export default function ReviewPage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      // Only redirect if it's not a network error
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        router.push('/login');
+      }
     }
   }, [user, isLoading, router]);
 
@@ -44,12 +48,53 @@ export default function ReviewPage() {
     }
   };
 
-  if (isLoading || loading || !user) {
+  // Check if we have a token but no user (network error case)
+  const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+  const isNetworkError = hasToken && !user && !isLoading;
+
+  if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading your words...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show network error message if we have token but can't connect to backend
+  if (isNetworkError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🌐</div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            Backend Connection Issue
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            You're logged in, but we can't connect to the backend right now.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Only redirect to login if we truly don't have a token
+  if (!hasToken) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Please log in to review your words</h1>
+          <a href="/login" className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+            Go to Login
+          </a>
         </div>
       </div>
     );

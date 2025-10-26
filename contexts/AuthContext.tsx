@@ -41,8 +41,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.user);
     } catch (error) {
       console.error('Failed to fetch user:', error);
-      api.clearToken();
-      setUser(null);
+      // Only clear token if it's an authentication error (401), not network errors
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        api.clearToken();
+        setUser(null);
+      } else {
+        // For network errors, keep the user logged in but don't set user data
+        console.warn('Network error - keeping user logged in');
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
