@@ -27,21 +27,27 @@ export default function WordsTable({ words, setWords }: WordsTableProps) {
         updatedAt: Date.now(),
       };
       
-      setWords([tempWord, ...words]);
       const wordToAdd = newWord.trim();
       setNewWord('');
+      
+      // Add temp word to the list
+      setWords(prevWords => [tempWord, ...prevWords]);
 
       // Create word with auto-translation
       const response = await api.createWord(wordToAdd);
       
       // Replace temp word with actual word
-      setWords(words.map(w => 
-        w.wordId === tempWord.wordId ? response.word : w
-      ));
+      setWords(prevWords => 
+        prevWords.map(w => 
+          w.wordId === tempWord.wordId ? response.word : w
+        )
+      );
     } catch (error) {
       console.error('Failed to create word:', error);
       // Remove temp word on error
-      setWords(words.filter(w => w.wordId !== 'temp-' + Date.now()));
+      setWords(prevWords => 
+        prevWords.filter(w => w.wordId !== tempWord.wordId)
+      );
     }
   };
 
