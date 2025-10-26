@@ -1,15 +1,21 @@
 import { test, expect } from '@playwright/test';
+import { testConfig, getApiEndpoint } from '../config/testConfig';
 
 test.describe('Language Learning API Tests', () => {
-  const API_BASE_URL = 'http://localhost:3000/api';
+  // Skip API tests if no API URL is configured
+  test.beforeAll(async () => {
+    if (!testConfig.apiUrl.includes('your-api-id')) {
+      test.skip();
+    }
+  });
 
   test.describe('Authentication API', () => {
     test('should register a new user', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/auth/register`, {
+      const response = await request.post(getApiEndpoint('/auth/register'), {
         data: {
-          email: 'test@example.com',
+          email: `test-${Date.now()}@example.com`,
           name: 'Test User',
-          targetLanguage: 'es'
+          targetLanguage: 'Spanish'
         }
       });
 
@@ -17,23 +23,24 @@ test.describe('Language Learning API Tests', () => {
       const data = await response.json();
       expect(data).toHaveProperty('token');
       expect(data).toHaveProperty('user');
-      expect(data.user.email).toBe('test@example.com');
+      expect(data.user.email).toContain('test-');
     });
 
     test('should login with valid credentials', async ({ request }) => {
       // First register a user
-      await request.post(`${API_BASE_URL}/auth/register`, {
+      const registerResponse = await request.post(getApiEndpoint('/auth/register'), {
         data: {
-          email: 'test@example.com',
+          email: `test-${Date.now()}@example.com`,
           name: 'Test User',
-          targetLanguage: 'es'
+          targetLanguage: 'Spanish'
         }
       });
+      const { user } = await registerResponse.json();
 
       // Then login
-      const response = await request.post(`${API_BASE_URL}/auth/login`, {
+      const response = await request.post(getApiEndpoint('/auth/login'), {
         data: {
-          email: 'test@example.com'
+          email: user.email
         }
       });
 
@@ -44,7 +51,7 @@ test.describe('Language Learning API Tests', () => {
     });
 
     test('should fail login with invalid credentials', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/auth/login`, {
+      const response = await request.post(getApiEndpoint('/auth/login'), {
         data: {
           email: 'nonexistent@example.com'
         }
@@ -59,11 +66,11 @@ test.describe('Language Learning API Tests', () => {
 
     test.beforeEach(async ({ request }) => {
       // Register and get auth token
-      const response = await request.post(`${API_BASE_URL}/auth/register`, {
+      const response = await request.post(getApiEndpoint('/auth/register'), {
         data: {
           email: `test-${Date.now()}@example.com`,
           name: 'Test User',
-          targetLanguage: 'es'
+          targetLanguage: 'Spanish'
         }
       });
       const data = await response.json();
@@ -71,7 +78,7 @@ test.describe('Language Learning API Tests', () => {
     });
 
     test('should create a new word', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/words`, {
+      const response = await request.post(getApiEndpoint('/words'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -89,7 +96,7 @@ test.describe('Language Learning API Tests', () => {
 
     test('should get user words', async ({ request }) => {
       // Create a word first
-      await request.post(`${API_BASE_URL}/words`, {
+      await request.post(getApiEndpoint('/words'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -100,7 +107,7 @@ test.describe('Language Learning API Tests', () => {
       });
 
       // Get words
-      const response = await request.get(`${API_BASE_URL}/words`, {
+      const response = await request.get(getApiEndpoint('/words'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -115,7 +122,7 @@ test.describe('Language Learning API Tests', () => {
 
     test('should delete a word', async ({ request }) => {
       // Create a word first
-      const createResponse = await request.post(`${API_BASE_URL}/words`, {
+      const createResponse = await request.post(getApiEndpoint('/words'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -127,7 +134,7 @@ test.describe('Language Learning API Tests', () => {
       const { word } = await createResponse.json();
 
       // Delete the word
-      const response = await request.delete(`${API_BASE_URL}/words/${word.wordId}`, {
+      const response = await request.delete(getApiEndpoint(`/words/${word.wordId}`), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -142,11 +149,11 @@ test.describe('Language Learning API Tests', () => {
 
     test.beforeEach(async ({ request }) => {
       // Register and get auth token
-      const response = await request.post(`${API_BASE_URL}/auth/register`, {
+      const response = await request.post(getApiEndpoint('/auth/register'), {
         data: {
           email: `test-${Date.now()}@example.com`,
           name: 'Test User',
-          targetLanguage: 'es'
+          targetLanguage: 'Spanish'
         }
       });
       const data = await response.json();
@@ -154,7 +161,7 @@ test.describe('Language Learning API Tests', () => {
     });
 
     test('should create a new phrase', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/phrases`, {
+      const response = await request.post(getApiEndpoint('/phrases'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -172,7 +179,7 @@ test.describe('Language Learning API Tests', () => {
 
     test('should get user phrases', async ({ request }) => {
       // Create a phrase first
-      await request.post(`${API_BASE_URL}/phrases`, {
+      await request.post(getApiEndpoint('/phrases'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -183,7 +190,7 @@ test.describe('Language Learning API Tests', () => {
       });
 
       // Get phrases
-      const response = await request.get(`${API_BASE_URL}/phrases`, {
+      const response = await request.get(getApiEndpoint('/phrases'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -202,11 +209,11 @@ test.describe('Language Learning API Tests', () => {
 
     test.beforeEach(async ({ request }) => {
       // Register and get auth token
-      const response = await request.post(`${API_BASE_URL}/auth/register`, {
+      const response = await request.post(getApiEndpoint('/auth/register'), {
         data: {
           email: `test-${Date.now()}@example.com`,
           name: 'Test User',
-          targetLanguage: 'es'
+          targetLanguage: 'Spanish'
         }
       });
       const data = await response.json();
@@ -214,7 +221,7 @@ test.describe('Language Learning API Tests', () => {
     });
 
     test('should translate a word', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/translate`, {
+      const response = await request.post(getApiEndpoint('/translate'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -233,7 +240,7 @@ test.describe('Language Learning API Tests', () => {
     });
 
     test('should translate a phrase', async ({ request }) => {
-      const response = await request.post(`${API_BASE_URL}/translate`, {
+      const response = await request.post(getApiEndpoint('/translate'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
