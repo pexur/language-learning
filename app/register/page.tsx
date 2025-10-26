@@ -183,15 +183,19 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-              Sign in
-            </Link>
-          </p>
+              <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
+                Already have an account?{' '}
+                <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
+        
+        {/* Footer at bottom */}
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 }
