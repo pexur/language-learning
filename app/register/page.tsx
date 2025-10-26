@@ -136,51 +136,39 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 Your Native Language
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <select
+                value={formData.nativeLanguage}
+                onChange={(e) => setFormData({ ...formData, nativeLanguage: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:outline-none transition-colors"
+              >
+                <option value="">Select your native language</option>
                 {POPULAR_LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code + '-native'}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, nativeLanguage: lang.name })}
-                    className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 active:scale-95 ${
-                      formData.nativeLanguage === lang.name
-                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{lang.flag}</div>
-                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{lang.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{lang.learners}</div>
-                  </button>
+                  <option key={lang.code + '-native'} value={lang.name}>
+                    {lang.flag} {lang.name}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 Language You Want to Learn
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <select
+                value={formData.targetLanguage}
+                onChange={(e) => setFormData({ ...formData, targetLanguage: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:outline-none transition-colors"
+              >
+                <option value="">Select the language you want to learn</option>
                 {POPULAR_LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, targetLanguage: lang.name })}
-                    className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 active:scale-95 ${
-                      formData.targetLanguage === lang.name
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{lang.flag}</div>
-                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{lang.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{lang.learners}</div>
-                  </button>
+                  <option key={lang.code} value={lang.name}>
+                    {lang.flag} {lang.name}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
             <button
