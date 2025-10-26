@@ -27,6 +27,7 @@ package-lock.json
 # Environment variables
 .env*
 env.json
+env-dev.json
 
 # Logs
 *.log
@@ -53,6 +54,3 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
-
-# AWS SAM
-samconfig.toml

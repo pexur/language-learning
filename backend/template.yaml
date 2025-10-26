@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Language Learning API - Serverless backend
 
+Conditions:
+  IsProd: !Equals [!Ref Stage, 'prod']
+
 Parameters:
   Stage:
     Type: String
@@ -78,6 +81,7 @@ Resources:
         AllowHeaders:
           - Content-Type
           - Authorization
+          - X-API-Key
         AllowMethods:
           - GET
           - POST
@@ -86,6 +90,9 @@ Resources:
           - OPTIONS
         AllowCredentials: true
         MaxAge: 300
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: !If [IsProd, 1000, 100]
+        ThrottlingRateLimit: !If [IsProd, 500, 50]
 
   # Authentication Functions
   GoogleOAuthCallbackFunction:
