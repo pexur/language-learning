@@ -42,16 +42,17 @@ export async function translateWord(word, nativeLanguage, targetLanguage) {
 
 The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
 
-Translate the word "${word}" from ${nativeLanguage} to ${targetLanguage}. Provide the translation and explain it in a way that helps someone learning ${targetLanguage}.
+First, check if "${word}" is spelled correctly in ${targetLanguage}. If it's misspelled, provide the correct spelling. Then translate the word to English and provide definitions.
 
 Provide the response in the following JSON format:
 {
-  "translation": "the translated word in ${targetLanguage}",
+  "translation": "the translated word in ${targetLanguage} (corrected if misspelled)",
+  "wordType": "noun|verb|adjective|adverb|other",
   "definitions": [
     {
       "id": "1",
-      "meaning": "concise definition in English (max 3-4 words)",
-      "example": "a natural example sentence using the word"
+      "meaning": "concise definition in English (max 3-4 words). Include the word type at the beginning: 'noun: thing', 'verb: action', 'adjective: description', etc.",
+      "example": "a natural example sentence using the word in ${targetLanguage}"
     },
     {
       "id": "2",
@@ -61,13 +62,12 @@ Provide the response in the following JSON format:
   ]
 }
 
-IMPORTANT RULES FOR DEFINITIONS:
-- Keep definitions VERY concise (2-4 words maximum)
-- For "combien" → "how many" (not "a French word meaning how many")
-- For "bonjour" → "hello" or "good morning" (not "a French greeting meaning hello")
-- Remove word type indicators (noun, verb, etc.)
-- Focus on core meaning only
+IMPORTANT RULES:
+- Keep definitions concise (3-5 words maximum) but include the word type explicitly
+- Example format: "noun: a person who teaches" or "verb: to acquire knowledge"
+- If the word is misspelled, correct it in the translation field
 - Provide 2-3 definitions if the word has multiple meanings
+- Examples should be natural sentences in ${targetLanguage}
 
 IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 

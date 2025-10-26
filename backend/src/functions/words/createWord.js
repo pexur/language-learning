@@ -46,12 +46,14 @@ export const handler = async (event) => {
     // Auto-translate the word if no translation provided
     let finalTranslation = translation;
     let finalDefinitions = definitions;
+    let wordType = null;
     
     if (!translation) {
       try {
         const translationResult = await translateWord(text, nativeLanguage, targetLanguage);
         finalTranslation = translationResult.translation;
         finalDefinitions = translationResult.definitions;
+        wordType = translationResult.wordType;
       } catch (error) {
         console.error('Auto-translation failed:', error);
         // Continue without translation if auto-translation fails
@@ -65,6 +67,7 @@ export const handler = async (event) => {
       wordId: uuidv4(),
       text,
       translation: finalTranslation,
+      wordType: wordType,
       definitions: finalDefinitions,
       createdAt: Date.now(),
       updatedAt: Date.now(),

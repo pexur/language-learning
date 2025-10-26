@@ -9,6 +9,7 @@ export interface Word {
   userId?: string;
   text: string;
   translation?: string;
+  wordType?: string;
   definitions?: Definition[];
   isTranslating?: boolean;
   createdAt: number;

@@ -341,6 +341,22 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
 // Component to display word type with decoration
 function WordTypeTag({ word }: { word: Word }) {
   const getWordType = (word: Word) => {
+    // First, try to use the wordType field if available
+    if (word.wordType) {
+      const type = word.wordType.toLowerCase();
+      switch(type) {
+        case 'noun':
+          return { type: 'noun', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
+        case 'verb':
+          return { type: 'verb', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' };
+        case 'adjective':
+          return { type: 'adjective', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' };
+        case 'adverb':
+          return { type: 'adverb', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' };
+      }
+    }
+
+    // Fallback: detect from definition meaning
     if (!word.definitions || word.definitions.length === 0) {
       return { type: 'unknown', color: 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300' };
     }
@@ -348,17 +364,16 @@ function WordTypeTag({ word }: { word: Word }) {
     const firstDef = word.definitions[0];
     const meaning = firstDef.meaning.toLowerCase();
     
-    // Simple word type detection based on definition patterns
-    if (meaning.includes('noun') || meaning.includes('thing') || meaning.includes('person') || meaning.includes('place')) {
+    if (meaning.includes('noun:')) {
       return { type: 'noun', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
     }
-    if (meaning.includes('verb') || meaning.includes('action') || meaning.includes('to ')) {
+    if (meaning.includes('verb:')) {
       return { type: 'verb', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' };
     }
-    if (meaning.includes('adjective') || meaning.includes('describes')) {
+    if (meaning.includes('adjective:')) {
       return { type: 'adjective', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' };
     }
-    if (meaning.includes('adverb') || meaning.includes('how')) {
+    if (meaning.includes('adverb:')) {
       return { type: 'adverb', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' };
     }
     
