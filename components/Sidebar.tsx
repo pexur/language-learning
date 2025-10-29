@@ -42,7 +42,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <aside
         className={`fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 w-64`}
+        } w-64`}
       >
         <div className="h-full flex flex-col">
           {/* Header */}
@@ -53,7 +53,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
               </h2>
               <button
                 onClick={onToggle}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <svg
                   className="w-6 h-6"
@@ -91,10 +91,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   key={item.path}
                   href={item.path}
                   onClick={() => {
-                    // Close sidebar on mobile after navigation
-                    if (window.innerWidth < 1024) {
-                      onToggle();
-                    }
+                    // Close sidebar after navigation
+                    onToggle();
                   }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive

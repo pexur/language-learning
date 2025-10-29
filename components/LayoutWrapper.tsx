@@ -28,7 +28,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+        className="fixed top-4 left-4 z-50 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
       >
         <svg
           className="w-6 h-6 text-gray-700 dark:text-gray-300"
@@ -49,7 +49,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
 
       {/* Main content */}
-      <div className="lg:ml-64 transition-all duration-300">
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : ''}`}>
         {children}
       </div>
     </div>
