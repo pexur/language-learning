@@ -201,6 +201,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConjugationsTable
       Events:
         Api:
           Type: HttpApi
@@ -404,6 +406,27 @@ Resources:
           Projection:
             ProjectionType: ALL
 
+  ConjugationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'language-learning-api-conjugations-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: verb
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: verb
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: CreatedAtIndex
+          KeySchema:
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
@@ -420,3 +443,7 @@ Outputs:
   PhrasesTableName:
     Description: Phrases DynamoDB table name
     Value: !Ref PhrasesTable
+
+  ConjugationsTableName:
+    Description: Conjugations DynamoDB table name
+    Value: !Ref ConjugationsTable

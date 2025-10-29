@@ -140,6 +140,11 @@ Update your frontend environment variables with this endpoint.
 - **GSI**: `UserCreatedAtIndex` (userId, createdAt)
 - **Attributes**: userId, phraseId, text, translation, createdAt
 
+### ConjugationsTable
+- **Partition Key**: `verb`
+- **GSI**: `CreatedAtIndex` (createdAt)
+- **Attributes**: verb, conjugationData, createdAt
+
 ## IAM Permissions
 
 Lambda execution role has permissions for:

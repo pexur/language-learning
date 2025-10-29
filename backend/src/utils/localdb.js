@@ -5,6 +5,7 @@ const db = {
   users: new Map(),
   words: new Map(),
   phrases: new Map(),
+  conjugations: new Map(),
 };
 
 const isLocal = process.env.IS_OFFLINE === 'true';
@@ -70,6 +71,25 @@ export const localDB = {
     if (!isLocal) throw new Error('Use DynamoDB in production');
     const key = `${userId}#${phraseId}`;
     db.phrases.delete(key);
+  },
+
+  // Conjugations
+  async saveConjugation(conjugation) {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    db.conjugations.set(conjugation.verb, conjugation);
+    return conjugation;
+  },
+
+  async getConjugation(verb) {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    const conjugation = db.conjugations.get(verb);
+    return conjugation ? conjugation.conjugationData : null;
+  },
+
+  async getAllConjugations() {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    return Array.from(db.conjugations.values())
+      .sort((a, b) => b.createdAt - a.createdAt);
   },
 };
 
