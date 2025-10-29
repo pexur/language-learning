@@ -183,8 +183,12 @@ async function cacheExercises(cacheKey, exerciseData, userId) {
     createdAt: Date.now(),
   };
 
+  console.log('Caching exercise item:', JSON.stringify(item, null, 2));
+  console.log('EXERCISES_TABLE:', EXERCISES_TABLE);
+
   if (isLocalMode()) {
     await localDB.saveExercises(item);
+    console.log('Cached exercises in local DB');
     return;
   }
 
@@ -194,5 +198,6 @@ async function cacheExercises(cacheKey, exerciseData, userId) {
       Item: item,
     })
   );
+  console.log('Cached exercises in DynamoDB');
 }
 

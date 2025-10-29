@@ -315,6 +315,12 @@ Resources:
     Properties:
       CodeUri: .
       Handler: src/functions/generateExercises.handler
+      Environment:
+        Variables:
+          WORDS_TABLE: !Ref WordsTable
+          PHRASES_TABLE: !Ref PhrasesTable
+          USERS_TABLE: !Ref UsersTable
+          EXERCISES_TABLE: !Ref ExercisesTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref WordsTable
