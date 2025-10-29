@@ -337,6 +337,10 @@ Resources:
     Properties:
       CodeUri: .
       Handler: src/functions/getExercises.handler
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          EXERCISES_TABLE: !Ref ExercisesTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
