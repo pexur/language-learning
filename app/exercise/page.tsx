@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Exercise, ExerciseSet, ExerciseState } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,7 @@ export default function ExercisePage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [exerciseState, setExerciseState] = useState<ExerciseState>({});
+  const hasLoadedExercises = useRef(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -24,16 +25,19 @@ export default function ExercisePage() {
 
   // Load existing exercises when component mounts
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !hasLoadedExercises.current) {
+      hasLoadedExercises.current = true;
       loadExistingExercises();
     }
-  }, [user, loading]);
+  }, [user]);
 
   const loadExistingExercises = async () => {
     setLoading(true);
     try {
       const response = await api.getExercises();
+      console.log('API Response:', response); // Debug log
       if (response.exercises) {
+        console.log('Exercises found:', response.exercises); // Debug log
         setExercises(response.exercises);
         // Try to restore exercise state from localStorage
         const savedState = localStorage.getItem('exerciseState');
@@ -44,6 +48,8 @@ export default function ExercisePage() {
             console.warn('Failed to parse saved exercise state:', e);
           }
         }
+      } else {
+        console.log('No exercises found in response'); // Debug log
       }
     } catch (error) {
       console.error('Failed to load existing exercises:', error);
