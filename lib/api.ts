@@ -129,6 +129,10 @@ export class APIClient {
     });
   }
 
+  async getExercises() {
+    return this.request('/exercises');
+  }
+
   // OAuth URLs
   getGoogleOAuthURL() {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;

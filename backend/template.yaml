@@ -332,6 +332,24 @@ Resources:
             Path: /exercises
             Method: POST
 
+  GetExercisesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/getExercises.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ExercisesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /exercises
+            Method: GET
+
   # DynamoDB Tables
   UsersTable:
     Type: AWS::DynamoDB::Table

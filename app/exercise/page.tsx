@@ -22,12 +22,45 @@ export default function ExercisePage() {
     }
   }, [user, authLoading, router]);
 
+  // Load existing exercises when component mounts
+  useEffect(() => {
+    if (user && !loading) {
+      loadExistingExercises();
+    }
+  }, [user, loading]);
+
+  const loadExistingExercises = async () => {
+    setLoading(true);
+    try {
+      const response = await api.getExercises();
+      if (response.exercises) {
+        setExercises(response.exercises);
+        // Try to restore exercise state from localStorage
+        const savedState = localStorage.getItem('exerciseState');
+        if (savedState) {
+          try {
+            setExerciseState(JSON.parse(savedState));
+          } catch (e) {
+            console.warn('Failed to parse saved exercise state:', e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load existing exercises:', error);
+      // Don't show error to user, just continue without exercises
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generateExercises = async () => {
     setGenerating(true);
     try {
       const response = await api.generateExercises();
       setExercises(response.exercises);
       setExerciseState({});
+      // Clear saved state when generating new exercises
+      localStorage.removeItem('exerciseState');
     } catch (error) {
       console.error('Failed to generate exercises:', error);
       alert('Failed to generate exercises. Please make sure you have some translated words and phrases.');
@@ -37,36 +70,42 @@ export default function ExercisePage() {
   };
 
   const handleAnswerChange = (exerciseId: string, answer: string) => {
-    setExerciseState(prev => ({
-      ...prev,
+    const newState = {
+      ...exerciseState,
       [exerciseId]: {
-        ...prev[exerciseId],
+        ...exerciseState[exerciseId],
         userAnswer: answer,
         isCorrect: null,
       }
-    }));
+    };
+    setExerciseState(newState);
+    // Save to localStorage for persistence
+    localStorage.setItem('exerciseState', JSON.stringify(newState));
   };
 
   const checkAnswer = (exerciseId: string, correctAnswer: string) => {
     const userAnswer = exerciseState[exerciseId]?.userAnswer?.toLowerCase().trim();
     const isCorrect = userAnswer === correctAnswer.toLowerCase().trim();
     
-    setExerciseState(prev => ({
-      ...prev,
+    const newState = {
+      ...exerciseState,
       [exerciseId]: {
-        ...prev[exerciseId],
+        ...exerciseState[exerciseId],
         isCorrect,
         showResult: true,
       }
-    }));
+    };
+    setExerciseState(newState);
+    // Save to localStorage for persistence
+    localStorage.setItem('exerciseState', JSON.stringify(newState));
   };
 
-  if (authLoading || !user) {
+  if (authLoading || !user || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading exercises...</p>
         </div>
       </div>
     );
@@ -154,6 +193,7 @@ export default function ExercisePage() {
                 onClick={() => {
                   setExercises(null);
                   setExerciseState({});
+                  localStorage.removeItem('exerciseState');
                 }}
                 className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
               >
