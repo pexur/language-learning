@@ -1,4 +1,4 @@
-import dynamoDB, { QueryCommand, GetCommand } from '../utils/dynamodb.js';
+import dynamoDB, { QueryCommand, GetCommand, PutCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
 import { localDB, isLocalMode } from '../utils/localdb.js';
 import { generateExerciseSet } from '../utils/gemini.js';
@@ -6,6 +6,7 @@ import { generateExerciseSet } from '../utils/gemini.js';
 const WORDS_TABLE = process.env.WORDS_TABLE;
 const PHRASES_TABLE = process.env.PHRASES_TABLE;
 const USERS_TABLE = process.env.USERS_TABLE;
+const EXERCISES_TABLE = process.env.EXERCISES_TABLE;
 
 export const handler = async (event) => {
   try {
@@ -80,13 +81,39 @@ export const handler = async (event) => {
       });
     }
 
-    // Generate exercises using Gemini
-    const exercises = await generateExerciseSet(
+    // Create a cache key based on user's vocabulary and language preferences
+    const vocabularyHash = createVocabularyHash(validWords, validPhrases);
+    const cacheKey = `${user.userId}#${nativeLanguage}#${targetLanguage}#${vocabularyHash}`;
+
+    // First, try to get exercises from database cache
+    let exercises;
+    try {
+      exercises = await getCachedExercises(cacheKey);
+      if (exercises) {
+        console.log(`Found cached exercises for user: ${user.userId}`);
+        return createResponse(200, { exercises });
+      }
+    } catch (error) {
+      console.warn('Failed to get cached exercises:', error);
+    }
+
+    // If not in cache, generate new exercises using AI
+    console.log(`Generating new exercises for user: ${user.userId}`);
+    exercises = await generateExerciseSet(
       validWords,
       validPhrases,
       nativeLanguage,
       targetLanguage
     );
+
+    // Cache the result for future requests
+    try {
+      await cacheExercises(cacheKey, exercises, user.userId);
+      console.log(`Cached exercises for user: ${user.userId}`);
+    } catch (error) {
+      console.warn('Failed to cache exercises:', error);
+      // Don't fail the request if caching fails
+    }
 
     return createResponse(200, { exercises });
   } catch (error) {
@@ -97,4 +124,75 @@ export const handler = async (event) => {
     });
   }
 };
+
+/**
+ * Create a hash of the user's vocabulary for cache key generation
+ * @param {Array} words - Array of words
+ * @param {Array} phrases - Array of phrases
+ * @returns {string} - Hash string representing the vocabulary
+ */
+function createVocabularyHash(words, phrases) {
+  const wordKeys = words.map(w => `${w.text}:${w.translation}`).sort();
+  const phraseKeys = phrases.map(p => `${p.text}:${p.translation}`).sort();
+  const combined = [...wordKeys, ...phraseKeys].join('|');
+  
+  // Simple hash function (in production, you might want to use crypto.createHash)
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
+/**
+ * Get cached exercises from database
+ * @param {string} cacheKey - The cache key to look up
+ * @returns {Promise<Object|null>} - Cached exercise data or null if not found
+ */
+async function getCachedExercises(cacheKey) {
+  if (isLocalMode()) {
+    return await localDB.getExercises(cacheKey);
+  }
+
+  const result = await dynamoDB.send(
+    new GetCommand({
+      TableName: EXERCISES_TABLE,
+      Key: { 
+        userId: cacheKey.split('#')[0], // Extract userId from cache key
+        exerciseId: cacheKey 
+      },
+    })
+  );
+
+  return result.Item ? result.Item.exerciseData : null;
+}
+
+/**
+ * Cache exercises in database
+ * @param {string} cacheKey - The cache key
+ * @param {Object} exerciseData - The exercise data to store
+ * @param {string} userId - The user ID
+ */
+async function cacheExercises(cacheKey, exerciseData, userId) {
+  const item = {
+    userId: cacheKey.split('#')[0], // Extract userId from cache key
+    exerciseId: cacheKey,
+    exerciseData,
+    createdAt: Date.now(),
+  };
+
+  if (isLocalMode()) {
+    await localDB.saveExercises(item);
+    return;
+  }
+
+  await dynamoDB.send(
+    new PutCommand({
+      TableName: EXERCISES_TABLE,
+      Item: item,
+    })
+  );
+}
 

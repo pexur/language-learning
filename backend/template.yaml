@@ -322,6 +322,8 @@ Resources:
             TableName: !Ref PhrasesTable
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ExercisesTable
       Events:
         Api:
           Type: HttpApi
@@ -427,6 +429,33 @@ Resources:
           Projection:
             ProjectionType: ALL
 
+  ExercisesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'language-learning-api-exercises-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: exerciseId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: exerciseId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: UserCreatedAtIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
@@ -447,3 +476,7 @@ Outputs:
   ConjugationsTableName:
     Description: Conjugations DynamoDB table name
     Value: !Ref ConjugationsTable
+
+  ExercisesTableName:
+    Description: Exercises DynamoDB table name
+    Value: !Ref ExercisesTable

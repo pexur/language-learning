@@ -145,6 +145,12 @@ Update your frontend environment variables with this endpoint.
 - **GSI**: `CreatedAtIndex` (createdAt)
 - **Attributes**: verb, conjugationData, createdAt
 
+### ExercisesTable
+- **Partition Key**: `userId`
+- **Sort Key**: `exerciseId`
+- **GSI**: `UserCreatedAtIndex` (userId, createdAt)
+- **Attributes**: userId, exerciseId, exerciseData, createdAt
+
 ## IAM Permissions
 
 Lambda execution role has permissions for:

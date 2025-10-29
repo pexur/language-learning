@@ -6,6 +6,7 @@ const db = {
   words: new Map(),
   phrases: new Map(),
   conjugations: new Map(),
+  exercises: new Map(),
 };
 
 const isLocal = process.env.IS_OFFLINE === 'true';
@@ -89,6 +90,32 @@ export const localDB = {
   async getAllConjugations() {
     if (!isLocal) throw new Error('Use DynamoDB in production');
     return Array.from(db.conjugations.values())
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+
+  // Exercises
+  async saveExercises(exercise) {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    const key = `${exercise.userId}#${exercise.exerciseId}`;
+    db.exercises.set(key, exercise);
+    return exercise;
+  },
+
+  async getExercises(exerciseId) {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    // Find exercise by exerciseId (which contains the full cache key)
+    for (const [key, exercise] of db.exercises.entries()) {
+      if (exercise.exerciseId === exerciseId) {
+        return exercise.exerciseData;
+      }
+    }
+    return null;
+  },
+
+  async getAllExercises(userId) {
+    if (!isLocal) throw new Error('Use DynamoDB in production');
+    return Array.from(db.exercises.values())
+      .filter(e => e.userId === userId)
       .sort((a, b) => b.createdAt - a.createdAt);
   },
 };
