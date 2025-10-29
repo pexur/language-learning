@@ -1,8 +1,9 @@
-import dynamoDB, { QueryCommand } from '../utils/dynamodb.js';
+import dynamoDB, { QueryCommand, GetCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
 import { localDB, isLocalMode } from '../utils/localdb.js';
 
 const EXERCISES_TABLE = process.env.EXERCISES_TABLE;
+const USERS_TABLE = process.env.USERS_TABLE;
 
 export const handler = async (event) => {
   try {
@@ -16,10 +17,9 @@ export const handler = async (event) => {
     if (isLocalMode()) {
       userData = await localDB.getUser(user.userId);
     } else {
-      const { GetCommand } = await import('../utils/dynamodb.js');
       const result = await dynamoDB.send(
         new GetCommand({
-          TableName: process.env.USERS_TABLE,
+          TableName: USERS_TABLE,
           Key: { userId: user.userId },
         })
       );

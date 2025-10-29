@@ -47,6 +47,12 @@ export default function ExercisePage() {
       }
     } catch (error) {
       console.error('Failed to load existing exercises:', error);
+      // Check if it's a 404 (endpoint not deployed yet) or other error
+      if (error.message.includes('404') || error.message.includes('Not Found')) {
+        console.log('GET /exercises endpoint not available yet - this is expected if backend is not deployed');
+      } else {
+        console.error('Unexpected error loading exercises:', error);
+      }
       // Don't show error to user, just continue without exercises
     } finally {
       setLoading(false);
