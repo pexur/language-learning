@@ -416,18 +416,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: verb
           AttributeType: S
-        - AttributeName: createdAt
-          AttributeType: N
       KeySchema:
         - AttributeName: verb
           KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: CreatedAtIndex
-          KeySchema:
-            - AttributeName: createdAt
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
 
   ExercisesTable:
     Type: AWS::DynamoDB::Table
