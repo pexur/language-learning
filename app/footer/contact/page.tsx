@@ -97,7 +97,7 @@ export default function Contact() {
                 <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-white">Quick Links</h2>
                 <div className="space-y-3">
                   <a
-                    href="/help"
+                    href="/footer/help"
                     className="block p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
                   >
                     <div className="flex items-center">
@@ -109,7 +109,7 @@ export default function Contact() {
                     </div>
                   </a>
                   <a
-                    href="/about"
+                    href="/footer/about"
                     className="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
                   >
                     <div className="flex items-center">
@@ -121,7 +121,7 @@ export default function Contact() {
                     </div>
                   </a>
                   <a
-                    href="/privacy"
+                    href="/footer/privacy"
                     className="block p-4 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
                   >
                     <div className="flex items-center">
@@ -229,9 +229,9 @@ export default function Contact() {
               <div className="flex flex-wrap gap-4 justify-center text-sm">
                 <a href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">Home</a>
                 <span className="text-gray-400">•</span>
-                <a href="/about" className="text-indigo-600 dark:text-indigo-400 hover:underline">About</a>
+                <a href="/footer/about" className="text-indigo-600 dark:text-indigo-400 hover:underline">About</a>
                 <span className="text-gray-400">•</span>
-                <a href="/help" className="text-indigo-600 dark:text-indigo-400 hover:underline">Help</a>
+                <a href="/footer/help" className="text-indigo-600 dark:text-indigo-400 hover:underline">Help</a>
               </div>
             </div>
           </div>
@@ -240,4 +240,9 @@ export default function Contact() {
     </div>
   );
 }
+
+
+
+
+
 

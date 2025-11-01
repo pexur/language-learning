@@ -165,7 +165,7 @@ export default function TermsOfService() {
                 <a href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   ← Back to Home
                 </a>
-                <a href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <a href="/footer/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   Privacy Policy →
                 </a>
               </div>
@@ -176,4 +176,9 @@ export default function TermsOfService() {
     </div>
   );
 }
+
+
+
+
+
 

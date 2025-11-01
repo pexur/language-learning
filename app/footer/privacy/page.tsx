@@ -147,7 +147,7 @@ export default function PrivacyPolicy() {
                 <a href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   ← Back to Home
                 </a>
-                <a href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <a href="/footer/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   Terms of Service →
                 </a>
               </div>
@@ -158,4 +158,9 @@ export default function PrivacyPolicy() {
     </div>
   );
 }
+
+
+
+
+
 

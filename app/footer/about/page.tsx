@@ -136,13 +136,13 @@ export default function About() {
               </p>
               <div className="flex gap-4">
                 <a
-                  href="/contact"
+                  href="/footer/contact"
                   className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Get in Touch
                 </a>
                 <a
-                  href="/help"
+                  href="/footer/help"
                   className="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Help & Support
@@ -155,11 +155,11 @@ export default function About() {
               <div className="flex flex-wrap gap-4 justify-center text-sm">
                 <a href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">Home</a>
                 <span className="text-gray-400">•</span>
-                <a href="/contact" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact</a>
+                <a href="/footer/contact" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact</a>
                 <span className="text-gray-400">•</span>
-                <a href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">Privacy</a>
+                <a href="/footer/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">Privacy</a>
                 <span className="text-gray-400">•</span>
-                <a href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">Terms</a>
+                <a href="/footer/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">Terms</a>
               </div>
             </div>
           </div>
@@ -168,4 +168,9 @@ export default function About() {
     </div>
   );
 }
+
+
+
+
+
 

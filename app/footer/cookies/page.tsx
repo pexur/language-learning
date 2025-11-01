@@ -139,10 +139,10 @@ export default function CookiePolicy() {
             {/* Footer Navigation */}
             <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-wrap gap-4 justify-center">
-                <a href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <a href="/footer/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   ← Privacy Policy
                 </a>
-                <a href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <a href="/footer/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   Terms of Service →
                 </a>
               </div>
@@ -153,4 +153,9 @@ export default function CookiePolicy() {
     </div>
   );
 }
+
+
+
+
+
 

@@ -145,7 +145,7 @@ export default function Help() {
                 Can't find what you're looking for? Our support team is here to help!
               </p>
               <a
-                href="/contact"
+                href="/footer/contact"
                 className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 Contact Support →
@@ -157,9 +157,9 @@ export default function Help() {
               <div className="flex flex-wrap gap-4 justify-center text-sm">
                 <a href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">Home</a>
                 <span className="text-gray-400">•</span>
-                <a href="/about" className="text-indigo-600 dark:text-indigo-400 hover:underline">About</a>
+                <a href="/footer/about" className="text-indigo-600 dark:text-indigo-400 hover:underline">About</a>
                 <span className="text-gray-400">•</span>
-                <a href="/contact" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact</a>
+                <a href="/footer/contact" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact</a>
               </div>
             </div>
           </div>
@@ -168,4 +168,9 @@ export default function Help() {
     </div>
   );
 }
+
+
+
+
+
 

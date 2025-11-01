@@ -20,17 +20,17 @@ export default function Footer() {
             <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/about" className="hover:text-indigo-400 transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/help" className="hover:text-indigo-400 transition-colors">
                   Help & FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/contact" className="hover:text-indigo-400 transition-colors">
                   Contact
                 </Link>
               </li>
@@ -42,17 +42,17 @@ export default function Footer() {
             <h3 className="text-lg font-semibold text-white mb-4">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/privacy" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/privacy" className="hover:text-indigo-400 transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/terms" className="hover:text-indigo-400 transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/cookies" className="hover:text-indigo-400 transition-colors">
                   Cookie Policy
                 </Link>
               </li>
@@ -69,12 +69,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/help" className="hover:text-indigo-400 transition-colors">
+                <a href="/footer/help" className="hover:text-indigo-400 transition-colors">
                   Documentation
                 </a>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-indigo-400 transition-colors">
+                <Link href="/footer/contact" className="hover:text-indigo-400 transition-colors">
                   Report a Bug
                 </Link>
               </li>
@@ -88,13 +88,18 @@ export default function Footer() {
             © {currentYear} Language Learning App. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm">
-            <a href="/privacy" className="hover:text-indigo-400 transition-colors">Privacy</a>
-            <a href="/terms" className="hover:text-indigo-400 transition-colors">Terms</a>
-            <a href="/cookies" className="hover:text-indigo-400 transition-colors">Cookies</a>
+            <a href="/footer/privacy" className="hover:text-indigo-400 transition-colors">Privacy</a>
+            <a href="/footer/terms" className="hover:text-indigo-400 transition-colors">Terms</a>
+            <a href="/footer/cookies" className="hover:text-indigo-400 transition-colors">Cookies</a>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
+
+
+
+
 

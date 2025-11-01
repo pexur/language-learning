@@ -56,7 +56,6 @@ export default function ExerciseDatePage() {
           setExerciseState(restoredState);
         }
       } else {
-        // No exercises found for this date, redirect to exercise list
         router.push('/exercise');
       }
     } catch (error) {
@@ -115,7 +114,6 @@ export default function ExerciseDatePage() {
       });
     } catch (error) {
       console.error('Failed to save response:', error);
-      // Don't show error to user, just log it
     } finally {
       setSaving(false);
     }
@@ -181,36 +179,25 @@ export default function ExerciseDatePage() {
 
         <div className="space-y-8">
           {/* Section 1: Native to Target */}
-          <ExerciseSection
-            title="Translate from English to Target Language"
-            subtitle="Translate these English words to your learning language"
-            icon="🌍"
+          <SimpleTranslationTable
+            title={`Translate from ${user.nativeLanguage} to ${user.targetLanguage}`}
             exercises={exercises.words}
             exerciseState={exerciseState}
             onAnswerChange={handleAnswerChange}
             onCheckAnswer={checkAnswer}
+            leftLanguage={user.nativeLanguage}
+            rightLanguage={user.targetLanguage}
           />
 
           {/* Section 2: Target to Native */}
-          <ExerciseSection
-            title="Translate from Target Language to English"
-            subtitle="Translate these words back to English"
-            icon="🔁"
+          <SimpleTranslationTable
+            title={`Translate from ${user.targetLanguage} to ${user.nativeLanguage}`}
             exercises={exercises.wordsReverse}
             exerciseState={exerciseState}
             onAnswerChange={handleAnswerChange}
             onCheckAnswer={checkAnswer}
-          />
-
-          {/* Section 3: Sentence Translation */}
-          <SentenceTranslationSection
-            title="Sentence Translation"
-            subtitle="Translate these complete sentences"
-            icon="💬"
-            exercises={exercises.sentences}
-            exerciseState={exerciseState}
-            onAnswerChange={handleAnswerChange}
-            onCheckAnswer={checkAnswer}
+            leftLanguage={user.targetLanguage}
+            rightLanguage={user.nativeLanguage}
           />
         </div>
 
@@ -225,190 +212,112 @@ export default function ExerciseDatePage() {
   );
 }
 
-interface ExerciseSectionProps {
+interface SimpleTranslationTableProps {
   title: string;
-  subtitle: string;
-  icon: string;
   exercises: Exercise[];
   exerciseState: ExerciseState;
   onAnswerChange: (exerciseId: string, answer: string) => void;
   onCheckAnswer: (exerciseId: string, correctAnswer: string) => void;
+  leftLanguage: string;
+  rightLanguage: string;
 }
 
-function ExerciseSection({ title, subtitle, icon, exercises, exerciseState, onAnswerChange, onCheckAnswer }: ExerciseSectionProps) {
+function SimpleTranslationTable({
+  title,
+  exercises,
+  exerciseState,
+  onAnswerChange,
+  onCheckAnswer,
+  leftLanguage,
+  rightLanguage,
+}: SimpleTranslationTableProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
-          <span className="text-3xl">{icon}</span>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
           {title}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">{subtitle}</p>
       </div>
-      <div className="p-6 space-y-4">
-        {exercises.map((exercise, index) => {
-          const state = exerciseState[exercise.id] || { userAnswer: '', isCorrect: null, showResult: false };
-          return (
-            <div key={exercise.id} className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                    Exercise {index + 1}
-                  </p>
-                  <p className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                    {exercise.question}
-                  </p>
-                  {exercise.hint && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                      💡 {exercise.hint}
-                    </p>
-                  )}
-                </div>
-                {state.showResult && (
-                  <span className={`text-2xl ${state.isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                    {state.isCorrect ? '✓' : '✗'}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={state.userAnswer}
-                  onChange={(e) => onAnswerChange(exercise.id, e.target.value)}
-                  placeholder="Enter your answer..."
-                  className={`flex-1 px-4 py-2 rounded-lg border-2 focus:outline-none transition-colors ${
-                    state.showResult
-                      ? state.isCorrect
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400'
-                        : 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400'
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:border-indigo-500'
-                  }`}
-                  disabled={state.showResult}
-                />
-                {!state.showResult && (
-                  <button
-                    onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
-                    disabled={!state.userAnswer.trim()}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Check
-                  </button>
-                )}
-                {state.showResult && (
-                  <div className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
-                    Correct: {exercise.correctAnswer}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+      <div className="p-6">
+        <table className="w-full">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {leftLanguage}
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {rightLanguage}
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-24">
+                Result
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+            {exercises.map((exercise) => {
+              const state = exerciseState[exercise.id] || {
+                userAnswer: '',
+                isCorrect: null,
+                showResult: false,
+              };
 
-interface SentenceTranslationSectionProps {
-  title: string;
-  subtitle: string;
-  icon: string;
-  exercises: Exercise[];
-  exerciseState: ExerciseState;
-  onAnswerChange: (exerciseId: string, answer: string) => void;
-  onCheckAnswer: (exerciseId: string, correctAnswer: string) => void;
-}
-
-function SentenceTranslationSection({ title, subtitle, icon, exercises, exerciseState, onAnswerChange, onCheckAnswer }: SentenceTranslationSectionProps) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
-          <span className="text-3xl">{icon}</span>
-          {title}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">{subtitle}</p>
-      </div>
-      <div className="p-6 space-y-4">
-        {exercises.map((exercise, index) => {
-          const state = exerciseState[exercise.id] || { userAnswer: '', isCorrect: null, showResult: false };
-          const correctWords = exercise.correctAnswer.split(' ');
-          const userWords = state.userAnswer.trim().split(/\s+/).filter(w => w);
-          
-          return (
-            <div key={exercise.id} className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                    Exercise {index + 1}
-                  </p>
-                  <p className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                    {exercise.question}
-                  </p>
-                  {exercise.hint && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                      💡 {exercise.hint}
-                    </p>
-                  )}
-                </div>
-                {state.showResult && (
-                  <span className={`text-2xl ${state.isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                    {state.isCorrect ? '✓' : '✗'}
-                  </span>
-                )}
-              </div>
-              
-              {/* Individual word input boxes */}
-              <div className="mb-3">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Fill in each word:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {correctWords.map((_, wordIndex) => {
-                    const isCorrect = state.showResult && userWords[wordIndex]?.toLowerCase().trim() === correctWords[wordIndex]?.toLowerCase().trim();
-                    return (
-                      <input
-                        key={wordIndex}
-                        type="text"
-                        value={userWords[wordIndex] || ''}
-                        onChange={(e) => {
-                          const newWords = [...userWords];
-                          newWords[wordIndex] = e.target.value;
-                          onAnswerChange(exercise.id, newWords.join(' '));
-                        }}
-                        className={`w-24 px-3 py-2 text-center rounded-lg border-2 transition-colors ${
-                          state.showResult
-                            ? isCorrect
-                              ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400'
-                              : 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:border-indigo-500'
-                        }`}
-                        disabled={state.showResult}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {state.showResult && !state.isCorrect && (
-                <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                  <p className="font-semibold">Correct answer: {exercise.correctAnswer}</p>
-                </div>
-              )}
-              
-              {!state.showResult && (
-                <button
-                  onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
-                  disabled={userWords.length === 0}
-                  className="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              return (
+                <tr
+                  key={exercise.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  Check Answer
-                </button>
-              )}
-            </div>
-          );
-        })}
+                  <td className="px-6 py-4">
+                    <span className="text-lg font-semibold text-gray-800 dark:text-white">
+                      {exercise.question}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={state.userAnswer}
+                      onChange={(e) => onAnswerChange(exercise.id, e.target.value)}
+                      placeholder="Enter translation..."
+                      className={`w-full px-4 py-2 rounded-lg border-2 focus:outline-none transition-colors ${
+                        state.showResult
+                          ? state.isCorrect
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400'
+                            : 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400'
+                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:border-indigo-500'
+                      }`}
+                      disabled={state.showResult}
+                    />
+                    {state.showResult && !state.isCorrect && (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Correct: {exercise.correctAnswer}
+                      </p>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {state.showResult && (
+                      <span
+                        className={`text-2xl ${
+                          state.isCorrect ? 'text-green-500' : 'text-red-500'
+                        }`}
+                      >
+                        {state.isCorrect ? '✓' : '✗'}
+                      </span>
+                    )}
+                    {!state.showResult && (
+                      <button
+                        onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
+                        disabled={!state.userAnswer.trim()}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Check
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
-
