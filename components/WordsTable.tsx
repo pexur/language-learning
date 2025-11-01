@@ -15,27 +15,27 @@ export default function WordsTable({ words, setWords }: WordsTableProps) {
   const addWord = async () => {
     if (!newWord.trim()) return;
 
-    try {
-      // Show loading state for the new word
-      const tempWord = {
-        wordId: 'temp-' + Date.now(),
-        text: newWord.trim(),
-        translation: null,
-        definitions: null,
-        isTranslating: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-      
-      const wordToAdd = newWord.trim();
-      setNewWord('');
-      
-      // Add temp word to the list
-      setWords(prevWords => [tempWord, ...prevWords]);
+    // Show loading state for the new word
+    const tempWord: Word = {
+      wordId: 'temp-' + Date.now(),
+      text: newWord.trim(),
+      translation: undefined,
+      definitions: undefined,
+      isTranslating: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    
+    const wordToAdd = newWord.trim();
+    setNewWord('');
+    
+    // Add temp word to the list
+    setWords((prevWords: Word[]) => [tempWord, ...prevWords]);
 
+    try {
       // Create word with auto-translation
       const response = await api.createWord(wordToAdd);
-      
+
       // Replace temp word with actual word
       setWords(prevWords => 
         prevWords.map(w => 

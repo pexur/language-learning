@@ -30,7 +30,7 @@ export function useVocabulary() {
     const wordsArray = wordText.trim().split(/\s+/).filter(w => w.length > 0);
     
     // Create temp word(s) for loading state
-    const tempWords: Word[] = wordsArray.map((text, index) => ({
+    const tempWords: Word[] = wordsArray.map((text, index): Word => ({
       wordId: `temp-${Date.now()}-${index}`,
       text: text,
       translation: undefined,
