@@ -82,23 +82,31 @@ export const handler = async (event) => {
     }
 
     // Create a cache key based on user's vocabulary and language preferences
+    // Include date (YYYY-MM-DD) to create unique exercises per day
     const vocabularyHash = createVocabularyHash(validWords, validPhrases);
-    const cacheKey = `${user.userId}#${nativeLanguage}#${targetLanguage}#${vocabularyHash}`;
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const cacheKey = `${user.userId}#${nativeLanguage}#${targetLanguage}#${today}#${vocabularyHash}`;
 
-    // First, try to get exercises from database cache
+    // First, try to get exercises from database cache for today
     let exercises;
+    let exerciseItem;
     try {
-      exercises = await getCachedExercises(cacheKey);
-      if (exercises) {
-        console.log(`Found cached exercises for user: ${user.userId}`);
-        return createResponse(200, { exercises });
+      exerciseItem = await getCachedExerciseItem(cacheKey);
+      if (exerciseItem && exerciseItem.exerciseData) {
+        exercises = exerciseItem.exerciseData;
+        console.log(`Found cached exercises for user: ${user.userId} for date: ${today}`);
+        return createResponse(200, { 
+          exercises,
+          date: today,
+          exerciseId: cacheKey
+        });
       }
     } catch (error) {
       console.warn('Failed to get cached exercises:', error);
     }
 
     // If not in cache, generate new exercises using AI
-    console.log(`Generating new exercises for user: ${user.userId}`);
+    console.log(`Generating new exercises for user: ${user.userId} for date: ${today}`);
     exercises = await generateExerciseSet(
       validWords,
       validPhrases,
@@ -106,16 +114,20 @@ export const handler = async (event) => {
       targetLanguage
     );
 
-    // Cache the result for future requests
+    // Cache the result for future requests with empty userResponses
     try {
-      await cacheExercises(cacheKey, exercises, user.userId);
-      console.log(`Cached exercises for user: ${user.userId}`);
+      await cacheExercises(cacheKey, exercises, user.userId, today);
+      console.log(`Cached exercises for user: ${user.userId} for date: ${today}`);
     } catch (error) {
       console.warn('Failed to cache exercises:', error);
       // Don't fail the request if caching fails
     }
 
-    return createResponse(200, { exercises });
+    return createResponse(200, { 
+      exercises,
+      date: today,
+      exerciseId: cacheKey
+    });
   } catch (error) {
     console.error('Generate exercises error:', error);
     return createResponse(500, { 
@@ -147,13 +159,14 @@ function createVocabularyHash(words, phrases) {
 }
 
 /**
- * Get cached exercises from database
+ * Get cached exercise item from database (including userResponses)
  * @param {string} cacheKey - The cache key to look up
- * @returns {Promise<Object|null>} - Cached exercise data or null if not found
+ * @returns {Promise<Object|null>} - Cached exercise item or null if not found
  */
-async function getCachedExercises(cacheKey) {
+async function getCachedExerciseItem(cacheKey) {
   if (isLocalMode()) {
-    return await localDB.getExercises(cacheKey);
+    const exercise = await localDB.getExercises(cacheKey);
+    return exercise || null;
   }
 
   const result = await dynamoDB.send(
@@ -166,7 +179,7 @@ async function getCachedExercises(cacheKey) {
     })
   );
 
-  return result.Item ? result.Item.exerciseData : null;
+  return result.Item || null;
 }
 
 /**
@@ -174,12 +187,15 @@ async function getCachedExercises(cacheKey) {
  * @param {string} cacheKey - The cache key
  * @param {Object} exerciseData - The exercise data to store
  * @param {string} userId - The user ID
+ * @param {string} date - The date (YYYY-MM-DD)
  */
-async function cacheExercises(cacheKey, exerciseData, userId) {
+async function cacheExercises(cacheKey, exerciseData, userId, date) {
   const item = {
     userId: cacheKey.split('#')[0], // Extract userId from cache key
     exerciseId: cacheKey,
     exerciseData,
+    userResponses: {}, // Initialize empty responses object
+    date: date, // Store date for easy querying
     createdAt: Date.now(),
   };
 

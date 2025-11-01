@@ -32,9 +32,6 @@ export const handler = async (event) => {
 
     const { nativeLanguage, targetLanguage } = userData;
 
-    // Check if date parameter is provided in query string
-    const date = event.queryStringParameters?.date;
-
     // Get all exercises for the user
     let exercises;
     if (isLocalMode()) {
@@ -54,7 +51,7 @@ export const handler = async (event) => {
     }
 
     // Filter exercises that match the user's current language preferences
-    let relevantExercises = exercises.filter(exercise => {
+    const relevantExercises = exercises.filter(exercise => {
       const cacheKey = exercise.exerciseId || '';
       const parts = cacheKey.split('#');
       // Format: userId#nativeLanguage#targetLanguage#date#vocabularyHash
@@ -63,40 +60,46 @@ export const handler = async (event) => {
              parts[2] === targetLanguage;
     });
 
-    // If date is provided, filter to that specific date
-    if (date) {
-      relevantExercises = relevantExercises.filter(exercise => {
-        const exerciseDate = exercise.date || exercise.exerciseId?.split('#')[3];
-        return exerciseDate === date;
-      });
-    }
+    // Extract unique dates and create entries
+    const dateMap = new Map();
+    
+    relevantExercises.forEach(exercise => {
+      const cacheKey = exercise.exerciseId || '';
+      const parts = cacheKey.split('#');
+      if (parts.length >= 4) {
+        const date = parts[3]; // Date is the 4th part (index 3)
+        const dateStr = exercise.date || date; // Use date field if available, otherwise parse from key
+        
+        if (!dateMap.has(dateStr)) {
+          // Count responses to see if exercise was started/completed
+          const userResponses = exercise.userResponses || {};
+          const hasResponses = Object.keys(userResponses).length > 0;
+          
+          dateMap.set(dateStr, {
+            date: dateStr,
+            exerciseId: exercise.exerciseId,
+            createdAt: exercise.createdAt,
+            hasResponses: hasResponses,
+            responseCount: Object.keys(userResponses).length
+          });
+        }
+      }
+    });
 
-    // Return the exercise set (most recent if no date specified, or specific date if provided)
-    const targetExercise = relevantExercises.length > 0 ? relevantExercises[0] : null;
-
-    if (!targetExercise) {
-      return createResponse(200, { 
-        exercises: null,
-        hasExercises: false,
-        date: date || null
-      });
-    }
-
-    // Get user responses if they exist
-    const userResponses = targetExercise.userResponses || {};
+    // Convert map to array and sort by date (most recent first)
+    const entries = Array.from(dateMap.values()).sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
 
     return createResponse(200, { 
-      exercises: targetExercise.exerciseData,
-      hasExercises: true,
-      date: targetExercise.date || date,
-      exerciseId: targetExercise.exerciseId,
-      userResponses: userResponses
+      entries
     });
   } catch (error) {
-    console.error('Get exercises error:', error);
+    console.error('Get exercise entries error:', error);
     return createResponse(500, { 
-      error: 'Failed to get exercises',
+      error: 'Failed to get exercise entries',
       message: error.message 
     });
   }
 };
+

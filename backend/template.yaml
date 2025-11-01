@@ -236,6 +236,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref WordsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
       Events:
         Api:
           Type: HttpApi
@@ -359,6 +361,47 @@ Resources:
             ApiId: !Ref LanguageLearningApi
             Path: /exercises
             Method: GET
+
+  GetExerciseEntriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/getExerciseEntries.handler
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          EXERCISES_TABLE: !Ref ExercisesTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ExercisesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /exercises/entries
+            Method: GET
+
+  SaveExerciseResponsesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/functions/saveExerciseResponses.handler
+      Environment:
+        Variables:
+          EXERCISES_TABLE: !Ref ExercisesTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ExercisesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LanguageLearningApi
+            Path: /exercises/responses
+            Method: POST
 
   # DynamoDB Tables
   UsersTable:

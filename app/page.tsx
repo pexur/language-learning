@@ -68,8 +68,8 @@ export default function Home() {
     const tempWord: Word = {
       wordId: 'temp-' + Date.now(),
       text: wordText.trim(),
-      translation: null,
-      definitions: null,
+      translation: undefined,
+      definitions: undefined,
       isTranslating: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -225,7 +225,9 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
 
   const handleWordClick = (word: Word) => {
     if (isVerbClickable(word)) {
-      router.push(`/conjugate/${encodeURIComponent(word.text)}`);
+      // Use translation (corrected word) if available, otherwise fall back to text
+      const wordToConjugate = word.translation || word.text;
+      router.push(`/conjugate/${encodeURIComponent(wordToConjugate)}`);
     }
   };
 
@@ -277,7 +279,6 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Word</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Translation</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Type</th>
                 {Array.from({ length: maxDefinitions }, (_, i) => (
                   <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -304,14 +305,9 @@ function WordsReviewTable({ words, maxDefinitions, newText, setNewText, onAddWor
                         }`}
                         title={isVerbClickable(word) ? 'Click to view conjugations' : ''}
                       >
-                        {word.text}
+                        {word.translation || word.text || '—'}
                       </span>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-indigo-600 dark:text-indigo-400 font-medium">
-                      {word.translation || '—'}
-                    </span>
                   </td>
                   <td className="px-6 py-4">
                     <WordTypeTag word={word} />

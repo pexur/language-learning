@@ -1,8 +1,5 @@
 import { translateWord, translatePhrase } from '../utils/gemini.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
-import dynamoDB, { GetCommand } from '../utils/dynamodb.js';
-
-const USERS_TABLE = process.env.USERS_TABLE;
 
 export const handler = async (event) => {
   try {
@@ -12,22 +9,13 @@ export const handler = async (event) => {
       return createResponse(401, { error: 'Unauthorized' });
     }
 
-    // Get user's target language
-    const userResult = await dynamoDB.send(
-      new GetCommand({
-        TableName: USERS_TABLE,
-        Key: { userId: authUser.userId },
-      })
-    );
-
-    if (!userResult.Item) {
-      return createResponse(404, { error: 'User not found' });
-    }
-
-    const { targetLanguage, nativeLanguage } = userResult.Item;
-
     const body = JSON.parse(event.body);
-    const { text, type } = body;
+    const { text, type, nativeLanguage, targetLanguage } = body;
+
+    // Validate required fields
+    if (!nativeLanguage || !targetLanguage) {
+      return createResponse(400, { error: 'nativeLanguage and targetLanguage are required' });
+    }
 
     if (!text || !type) {
       return createResponse(400, { error: 'Text and type are required' });

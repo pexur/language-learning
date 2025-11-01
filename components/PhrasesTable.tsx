@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Phrase } from '@/types';
 import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PhrasesTableProps {
   phrases: Phrase[];
@@ -10,6 +11,7 @@ interface PhrasesTableProps {
 }
 
 export default function PhrasesTable({ phrases, setPhrases }: PhrasesTableProps) {
+  const { user } = useAuth();
   const [newPhrase, setNewPhrase] = useState('');
 
   const addPhrase = async () => {
@@ -31,7 +33,10 @@ export default function PhrasesTable({ phrases, setPhrases }: PhrasesTableProps)
 
     try {
       const phrase = phrases.find(p => p.phraseId === phraseId);
-      const data = await api.translate(phrase!.text, 'phrase');
+      if (!user?.nativeLanguage || !user?.targetLanguage) {
+        throw new Error('User language preferences not available');
+      }
+      const data = await api.translate(phrase!.text, 'phrase', user.nativeLanguage, user.targetLanguage);
 
       setPhrases(phrases.map(p =>
         p.phraseId === phraseId

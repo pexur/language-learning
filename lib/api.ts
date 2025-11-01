@@ -84,10 +84,10 @@ export class APIClient {
   }
 
   // Translation
-  async translate(text: string, type: 'word' | 'phrase') {
+  async translate(text: string, type: 'word' | 'phrase', nativeLanguage?: string, targetLanguage?: string) {
     return this.request('/translate', {
       method: 'POST',
-      body: JSON.stringify({ text, type }),
+      body: JSON.stringify({ text, type, nativeLanguage, targetLanguage }),
     });
   }
 
@@ -142,8 +142,20 @@ export class APIClient {
     });
   }
 
-  async getExercises() {
-    return this.request('/exercises');
+  async getExercises(date?: string) {
+    const url = date ? `/exercises?date=${encodeURIComponent(date)}` : '/exercises';
+    return this.request(url);
+  }
+
+  async getExerciseEntries() {
+    return this.request('/exercises/entries');
+  }
+
+  async saveExerciseResponses(exerciseId: string, responses: Record<string, any>) {
+    return this.request('/exercises/responses', {
+      method: 'POST',
+      body: JSON.stringify({ exerciseId, responses }),
+    });
   }
 
   // OAuth URLs
