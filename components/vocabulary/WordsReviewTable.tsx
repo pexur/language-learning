@@ -53,7 +53,7 @@ export default function WordsReviewTable({
               onAddWord(text);
             }
           }}
-          placeholder="Enter a new word..."
+          placeholder="Enter a word or multiple words separated by space..."
           className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:outline-none transition-colors"
         />
         <button

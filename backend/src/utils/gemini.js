@@ -31,62 +31,76 @@ export async function invokeGemini(prompt, maxTokens = 4000) {
 }
 
 /**
- * Translate a word with definitions and examples
- * @param {string} word - The word to translate
+ * Translate a word or multiple words with definitions and examples
+ * @param {string} word - The word(s) to translate (can be multiple words separated by spaces)
  * @param {string} nativeLanguage - User's native language
  * @param {string} targetLanguage - Target language (e.g., 'Spanish', 'French')
- * @returns {Promise<Object>} - Translation result with definitions
+ * @returns {Promise<Array>} - Array of translation results with definitions
  */
 export async function translateWord(word, nativeLanguage, targetLanguage) {
   console.log('translateWord-pexur', word, nativeLanguage, targetLanguage);
+  
   const prompt = `You are a professional translator and language teacher. 
 
 The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
 
-First, check if "${word}" is spelled correctly in ${targetLanguage}. If it's misspelled, provide the correct spelling. Then translate the word to ${nativeLanguage} and provide definitions in ${nativeLanguage}.
+Translate the following word(s) from ${nativeLanguage} to ${targetLanguage}: "${word}"
+
+The input may contain a single word or multiple words separated by spaces. If there are multiple words, split them by spaces and translate each word individually. If the input is a single word, return an array with one entry.
+
+For each word:
+- If it's already in ${targetLanguage}, provide its correct spelling and meaning
+- If it's misspelled, correct it in the translation field
+- Translate it to ${targetLanguage}
 
 Provide the response in the following JSON format:
 {
-  "translation": "the translated word in ${nativeLanguage} (corrected if misspelled)",
-  "wordType": "noun|verb|adjective|adverb|other",
-  "gender": "m|f|neutral (only for nouns in languages with gender, otherwise omit)",
-  "definitions": [
+  "words": [
     {
-      "id": "1",
-      "meaning": "concise definition in ${nativeLanguage} (max 3-4 words).",
-      "example": "a natural example sentence using the word in ${targetLanguage}"
-    },
-    {
-      "id": "2",
-      "meaning": "another concise definition in ${nativeLanguage} if applicable (max 3-4 words)",
-      "example": "another example sentence in ${targetLanguage}"
+      "originalWord": "the word from the input (extracted from the input string)",
+      "translation": "the translated word in ${targetLanguage} (must be in ${targetLanguage})",
+      "wordType": "noun|verb|adjective|adverb|other",
+      "gender": "m|f|neutral (only for nouns in languages with gender, otherwise omit)",
+      "definitions": [
+        {
+          "id": "1",
+          "meaning": "concise definition in ${nativeLanguage} (max 3-4 words).",
+          "example": "a natural example sentence using the word in ${targetLanguage}"
+        },
+        {
+          "id": "2",
+          "meaning": "another concise definition in ${nativeLanguage} if applicable (max 3-4 words)",
+          "example": "another example sentence in ${targetLanguage}"
+        }
+      ]
     }
   ]
 }
 
 IMPORTANT RULES:
-- The "translation" field MUST be the word in ${targetLanguage} - do NOT return the word in Spanish or any other language
+- Process each word separately - if the input contains multiple words separated by spaces, split them and translate each one individually
+- Return one entry in the "words" array for each word in the input (even if there's only one word)
+- The "translation" field MUST be in ${targetLanguage} - do NOT return words in Spanish or any other language
 - Keep definitions concise (3-5 words maximum) but include the word type explicitly
 - Example format: "noun: a person who teaches" or "verb: to acquire knowledge"
-- If the word is a noun in a language with gender (Spanish, French, Italian, etc.), include the gender field
+- If a word is a noun in a language with gender (Spanish, French, Italian, etc.), include the gender field
 - For Spanish: use "f" for feminine (la mesa), "m" for masculine (el libro)
 - For French: use "f" for feminine (la table), "m" for masculine (le livre)
-- If the word is misspelled, correct it in the translation field
+- If a word is misspelled, correct it in the translation field
 - Provide 2-3 definitions if the word has multiple meanings
 - Examples should be natural sentences in ${targetLanguage}
-- CRITICAL: The translation must be in ${targetLanguage}, not ${nativeLanguage}, not Spanish, not any other language
+- CRITICAL: All translations must be in ${targetLanguage}, not ${nativeLanguage}, not Spanish, not any other language
 
 IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 
-  const response = await invokeGemini(prompt, 2000);
+  const response = await invokeGemini(prompt, 4000);
 
   try {
-    // Extract JSON from response (in case Gemini adds extra text)
     const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return JSON.parse(response);
+    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(response);
+    
+    // Always return array of word results
+    return parsed.words || [];
   } catch (error) {
     console.error('Failed to parse Gemini response:', error);
     throw new Error('Invalid response format from translation service');

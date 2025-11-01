@@ -25,26 +25,51 @@ export function useVocabulary() {
 
   const addWord = async (wordText: string) => {
     if (!wordText.trim()) return;
-    const tempWord: Word = {
-      wordId: 'temp-' + Date.now(),
-      text: wordText.trim(),
+    
+    // Split input to show loading state for each word
+    const wordsArray = wordText.trim().split(/\s+/).filter(w => w.length > 0);
+    
+    // Create temp word(s) for loading state
+    const tempWords: Word[] = wordsArray.map((text, index) => ({
+      wordId: `temp-${Date.now()}-${index}`,
+      text: text,
       translation: undefined,
       definitions: undefined,
       isTranslating: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    };
-    setWords([tempWord, ...words]);
+    }));
+    
+    setWords([...tempWords, ...words]);
+    
     try {
       const response = await api.createWord(wordText.trim());
-      setWords((prevWords) =>
-        prevWords.map((w) =>
-          w.wordId === tempWord.wordId ? response.word : w
-        )
-      );
+      
+      // Backend always returns words as an array (even for single word)
+      const createdWords = response.words || [];
+      
+      // Replace temp words with actual words
+      setWords((prevWords) => {
+        let newWords = [...prevWords];
+        
+        // Remove temp words
+        tempWords.forEach(tempWord => {
+          const tempIndex = newWords.findIndex(w => w.wordId === tempWord.wordId);
+          if (tempIndex !== -1) {
+            newWords.splice(tempIndex, 1);
+          }
+        });
+        
+        // Add created words at the beginning
+        newWords = [...createdWords, ...newWords];
+        
+        return newWords;
+      });
     } catch (error) {
+      console.error('Failed to create word(s):', error);
+      // Remove temp words on error
       setWords((prevWords) =>
-        prevWords.filter((w) => w.wordId !== tempWord.wordId)
+        prevWords.filter((w) => !tempWords.some(temp => temp.wordId === w.wordId))
       );
     }
   };

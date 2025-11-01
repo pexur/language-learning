@@ -43,51 +43,98 @@ export const handler = async (event) => {
       console.warn('Could not get user language preferences, using defaults:', error);
     }
 
-    // Auto-translate the word if no translation provided
-    let finalTranslation = translation;
-    let finalDefinitions = definitions;
-    let wordType = null;
-    let gender = null;
+    // Auto-translate the word(s) if no translation provided
+    const words = [];
     
     if (!translation) {
       try {
-        const translationResult = await translateWord(text, nativeLanguage, targetLanguage);
-        finalTranslation = translationResult.translation;
-        finalDefinitions = translationResult.definitions;
-        wordType = translationResult.wordType;
-        gender = translationResult.gender;
+        const translationResults = await translateWord(text, nativeLanguage, targetLanguage);
+        
+        // Create a word for each translation result
+        for (const result of translationResults) {
+          const word = {
+            userId: user.userId,
+            wordId: uuidv4(),
+            text: result.originalWord || text, // Use originalWord from result, fallback to input text
+            translation: result.translation,
+            wordType: result.wordType || null,
+            gender: result.gender || null,
+            definitions: result.definitions || null,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          
+          if (isLocalMode()) {
+            await localDB.putWord(word);
+          } else {
+            await dynamoDB.send(
+              new PutCommand({
+                TableName: WORDS_TABLE,
+                Item: word,
+              })
+            );
+          }
+          
+          words.push(word);
+        }
       } catch (error) {
         console.error('Auto-translation failed:', error);
         // Continue without translation if auto-translation fails
-        finalTranslation = null;
-        finalDefinitions = null;
+        const word = {
+          userId: user.userId,
+          wordId: uuidv4(),
+          text,
+          translation: null,
+          wordType: null,
+          gender: null,
+          definitions: null,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        
+        if (isLocalMode()) {
+          await localDB.putWord(word);
+        } else {
+          await dynamoDB.send(
+            new PutCommand({
+              TableName: WORDS_TABLE,
+              Item: word,
+            })
+          );
+        }
+        
+        words.push(word);
       }
-    }
-
-    const word = {
-      userId: user.userId,
-      wordId: uuidv4(),
-      text,
-      translation: finalTranslation,
-      wordType: wordType,
-      gender: gender,
-      definitions: finalDefinitions,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-
-    if (isLocalMode()) {
-      await localDB.putWord(word);
     } else {
-      await dynamoDB.send(
-        new PutCommand({
-          TableName: WORDS_TABLE,
-          Item: word,
-        })
-      );
+      // Translation provided, create single word
+      const word = {
+        userId: user.userId,
+        wordId: uuidv4(),
+        text,
+        translation: translation,
+        wordType: null,
+        gender: null,
+        definitions: definitions || null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      if (isLocalMode()) {
+        await localDB.putWord(word);
+      } else {
+        await dynamoDB.send(
+          new PutCommand({
+            TableName: WORDS_TABLE,
+            Item: word,
+          })
+        );
+      }
+      
+      words.push(word);
     }
 
-    return createResponse(201, { word });
+    // Always return words as an array for consistency
+    return createResponse(201, { words });
   } catch (error) {
     console.error('Create word error:', error);
     return createResponse(500, { error: 'Internal server error' });
