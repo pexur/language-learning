@@ -105,14 +105,29 @@ export const handler = async (event) => {
       console.warn('Failed to get cached exercises:', error);
     }
 
-    // If not in cache, generate new exercises using AI
+    // If not in cache, generate simple exercises by randomly selecting words
     console.log(`Generating new exercises for user: ${user.userId} for date: ${today}`);
-    exercises = await generateExerciseSet(
-      validWords,
-      validPhrases,
-      nativeLanguage,
-      targetLanguage
-    );
+    
+    // Generate word exercises (parts 1 and 2) using random selection
+    const wordExercises = generateSimpleExercises(validWords, validPhrases, nativeLanguage, targetLanguage);
+    
+    // Generate sentence exercises (part 3) using Gemini with all user words
+    let sentenceExercises = [];
+    if (validWords.length > 0) {
+      try {
+        sentenceExercises = await generateExerciseSet(validWords, nativeLanguage, targetLanguage);
+      } catch (error) {
+        console.error('Failed to generate sentence exercises:', error);
+        // Continue without sentences if generation fails
+        sentenceExercises = [];
+      }
+    }
+    
+    exercises = {
+      words: wordExercises.words,
+      wordsReverse: wordExercises.wordsReverse,
+      sentences: sentenceExercises,
+    };
 
     // Cache the result for future requests with empty userResponses
     try {
@@ -215,5 +230,45 @@ async function cacheExercises(cacheKey, exerciseData, userId, date) {
     })
   );
   console.log('Cached exercises in DynamoDB');
+}
+
+/**
+ * Generate simple translation exercises from randomly selected words
+ * @param {Array} words - Array of words with translations
+ * @param {Array} phrases - Array of phrases with translations (not used for first two parts)
+ * @param {string} nativeLanguage - Native language
+ * @param {string} targetLanguage - Target language
+ * @returns {Object} - Exercise set with words and wordsReverse
+ */
+function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage) {
+  // Shuffle words to randomize selection
+  const shuffled = [...words].sort(() => Math.random() - 0.5);
+  
+  // Select 10 words for native to target (can reuse words if needed)
+  const wordsForNativeToTarget = shuffled.slice(0, Math.min(10, shuffled.length));
+  // Select 10 words for target to native (can reuse or get different words)
+  const wordsForTargetToNative = shuffled.slice(0, Math.min(10, shuffled.length));
+  
+  // First 10: Native -> Target (user sees native word, fills target translation)
+  const nativeToTarget = wordsForNativeToTarget.map((word, index) => ({
+    id: `nt-${index + 1}`,
+    type: 'word_to_target',
+    question: word.text, // Native language word
+    correctAnswer: word.translation, // Target language translation
+  }));
+  
+  // Second 10: Target -> Native (user sees target word, fills native translation)
+  const targetToNative = wordsForTargetToNative.map((word, index) => ({
+    id: `tn-${index + 1}`,
+    type: 'word_to_native',
+    question: word.translation, // Target language word
+    correctAnswer: word.text, // Native language translation
+  }));
+  
+  return {
+    words: nativeToTarget,
+    wordsReverse: targetToNative,
+    sentences: [], // Empty for now
+  };
 }
 

@@ -217,78 +217,62 @@ IMPORTANT: If the phrase is already in ${targetLanguage}, still provide a transl
 }
 
 /**
- * Generate a set of exercises from words and phrases
- * @param {Array} words - Array of words with translations
- * @param {Array} phrases - Array of phrases with translations
+ * Generate sentence translation exercises using words from user's vocabulary
+ * @param {Array} words - Array of all words with translations from user's database
  * @param {string} nativeLanguage - User's native language
  * @param {string} targetLanguage - Target language being learned
- * @returns {Promise<Object>} - Exercise set with words, wordsReverse, and sentences
+ * @returns {Promise<Array>} - Array of sentence exercises
  */
-export async function generateExerciseSet(words, phrases, nativeLanguage, targetLanguage) {
+export async function generateExerciseSet(words, nativeLanguage, targetLanguage) {
   const prompt = `You are a language learning exercise generator.
 
 The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
 
-Available words:
-${JSON.stringify(words.slice(0, 20).map(w => ({ word: w.text, translation: w.translation })))}
+Available words from the user's vocabulary (use these to create sentences):
+${JSON.stringify(words.map(w => ({ word: w.text, translation: w.translation })))}
 
-Available phrases (for sentence translation only):
-${JSON.stringify(phrases.slice(0, 10).map(p => ({ phrase: p.text, translation: p.translation })))}
-
-Generate a complete exercise set with exactly 30 exercises total (10 of each type):
-
-1. Type 1 "word_to_target": Provide a word in ${nativeLanguage}, ask user to translate to ${targetLanguage}
-2. Type 2 "word_to_native": Provide a word in ${targetLanguage}, ask user to translate to ${nativeLanguage}
-3. Type 3 "sentence": Provide a sentence in ${nativeLanguage} using phrases from the available phrases, ask user to translate to ${targetLanguage}. Use the correct answer words separated by spaces.
+Generate exactly 10 sentence translation exercises. Create natural sentences in ${nativeLanguage} using the words from the available vocabulary. The sentences should:
+- Be natural and meaningful (not just word lists)
+- Use words from the available vocabulary when possible
+- Be appropriate for language learning (beginner to intermediate level)
+- Vary in structure and topics
 
 Return ONLY a JSON object in this exact format:
 {
-  "words": [
-    {
-      "id": "w1",
-      "type": "word_to_target",
-      "question": "What is the ${targetLanguage} translation of 'apple'?",
-      "correctAnswer": "manzana",
-      "hint": "A common fruit"
-    }
-  ],
-  "wordsReverse": [
-    {
-      "id": "wr1",
-      "type": "word_to_native",
-      "question": "What is the ${nativeLanguage} translation of 'manzana'?",
-      "correctAnswer": "apple",
-      "hint": "A common fruit"
-    }
-  ],
   "sentences": [
     {
       "id": "s1",
       "type": "sentence",
-      "question": "Translate: 'How are you?' to ${targetLanguage}",
+      "question": "How are you?",
       "correctAnswer": "¿Cómo estás?",
       "hint": "Common greeting"
+    },
+    {
+      "id": "s2",
+      "type": "sentence",
+      "question": "I like apples.",
+      "correctAnswer": "Me gustan las manzanas.",
+      "hint": "Expressing preference"
     }
   ]
 }
 
 RULES:
-- Use exactly 10 words from the available words list for type 1
-- Use exactly 10 different words in reverse for type 2
-- Use available phrases for type 3, create natural sentences
-- For sentences, the correctAnswer should be the translation in ${targetLanguage} with words separated by spaces
-- Keep questions natural and engaging
-- Include helpful hints
-- Return ONLY the JSON, no additional text`;
+- The "question" field must contain ONLY the sentence in ${nativeLanguage}, NOT a full question or instruction
+- Generate exactly 10 sentences
+- Use words from the available vocabulary when creating sentences
+- The correctAnswer should be the translation in ${targetLanguage}
+- Keep sentences simple and appropriate for language learners
+- Return ONLY the JSON object with the "sentences" array, no additional text`;
 
   const response = await invokeGemini(prompt, 4000);
 
   try {
     const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return JSON.parse(response);
+    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(response);
+    
+    // Return only the sentences array
+    return parsed.sentences || [];
   } catch (error) {
     console.error('Failed to parse Gemini response:', error);
     throw new Error('Invalid response format from exercise generation service');
