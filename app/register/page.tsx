@@ -17,6 +17,7 @@ export default function RegisterPage() {
     name: '',
     nativeLanguage: '',
     targetLanguage: '',
+    password: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,8 +26,13 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    if (!formData.email || !formData.name || !formData.nativeLanguage || !formData.targetLanguage) {
+    if (!formData.email || !formData.name || !formData.nativeLanguage || !formData.targetLanguage || !formData.password) {
       setError('All fields are required');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
@@ -38,7 +44,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(formData.email, formData.name, formData.nativeLanguage, formData.targetLanguage);
+      await register(formData.email, formData.name, formData.nativeLanguage, formData.targetLanguage, formData.password);
       router.push('/');
     } catch (err: any) {
       setError(err.message || 'Registration failed');
@@ -135,6 +141,19 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:outline-none transition-colors"
                 placeholder="John Doe"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:outline-none transition-colors"
+                placeholder="At least 6 characters"
               />
             </div>
 

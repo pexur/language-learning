@@ -14,8 +14,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string) => Promise<void>;
-  register: (email: string, name: string, nativeLanguage: string, targetLanguage: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, name: string, nativeLanguage: string, targetLanguage: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -56,14 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string) => {
-    const response = await api.login(email);
+  const login = async (email: string, password: string) => {
+    const response = await api.login(email, password);
     api.setToken(response.token);
     setUser(response.user);
   };
 
-  const register = async (email: string, name: string, nativeLanguage: string, targetLanguage: string) => {
-    const response = await api.register(email, name, nativeLanguage, targetLanguage);
+  const register = async (email: string, name: string, nativeLanguage: string, targetLanguage: string, password: string) => {
+    const response = await api.register(email, name, nativeLanguage, targetLanguage, password);
     api.setToken(response.token);
     setUser(response.user);
   };
