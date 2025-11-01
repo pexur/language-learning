@@ -45,11 +45,12 @@ export const handler = async (event) => {
         
         // Create a word for each translation result
         for (const result of translationResults) {
+          // translation field = corrected spelling of the word in target language
+          // definitions[].meaning = native language translation
           const word = {
             userId: user.userId,
             wordId: uuidv4(),
-            text: result.originalWord || text, // Use originalWord from result, fallback to input text
-            translation: result.translation,
+            translation: result.translation, // Target language word (corrected spelling)
             wordType: result.wordType || null,
             gender: result.gender || null,
             definitions: result.definitions || null,
@@ -69,11 +70,11 @@ export const handler = async (event) => {
       } catch (error) {
         console.error('Auto-translation failed:', error);
         // Continue without translation if auto-translation fails
+        // Store the input as translation (target language word) even if translation failed
         const word = {
           userId: user.userId,
           wordId: uuidv4(),
-          text,
-          translation: null,
+          translation: text, // Use input text as the target language word
           wordType: null,
           gender: null,
           definitions: null,
@@ -92,11 +93,12 @@ export const handler = async (event) => {
       }
     } else {
       // Translation provided, create single word
+      // translation = target language word (corrected spelling)
+      // definitions = native language meanings
       const word = {
         userId: user.userId,
         wordId: uuidv4(),
-        text,
-        translation: translation,
+        translation: translation, // Target language word
         wordType: null,
         gender: null,
         definitions: definitions || null,

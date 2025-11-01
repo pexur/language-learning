@@ -199,6 +199,18 @@ export default function ExerciseDatePage() {
             leftLanguage={user.targetLanguage}
             rightLanguage={user.nativeLanguage}
           />
+
+          {/* Section 3: Sentence Translation */}
+          {exercises.sentences && exercises.sentences.length > 0 && (
+            <SentenceTranslationSection
+              title={`Translate sentences from ${user.nativeLanguage} to ${user.targetLanguage}`}
+              exercises={exercises.sentences}
+              exerciseState={exerciseState}
+              onAnswerChange={handleAnswerChange}
+              onCheckAnswer={checkAnswer}
+              targetLanguage={user.targetLanguage}
+            />
+          )}
         </div>
 
         {saving && (
@@ -317,6 +329,194 @@ function SimpleTranslationTable({
             })}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+interface SentenceTranslationSectionProps {
+  title: string;
+  exercises: Exercise[];
+  exerciseState: ExerciseState;
+  onAnswerChange: (exerciseId: string, answer: string) => void;
+  onCheckAnswer: (exerciseId: string, correctAnswer: string) => void;
+  targetLanguage: string;
+}
+
+function SentenceTranslationSection({
+  title,
+  exercises,
+  exerciseState,
+  onAnswerChange,
+  onCheckAnswer,
+  targetLanguage,
+}: SentenceTranslationSectionProps) {
+  // Check if language is CJK (Chinese, Japanese, Korean) for wider input boxes
+  const isCJK = ['Chinese', 'Japanese', 'Korean'].includes(targetLanguage);
+  
+  // Track composition state for each input to handle IME properly
+  const compositionStatesRef = useRef<Record<string, boolean>>({});
+  
+  // Function to split answer into words
+  const splitAnswer = (answer: string): string[] => {
+    // Split by spaces for all languages
+    return answer.split(/\s+/).filter(w => w.length > 0);
+  };
+
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          {title}
+        </h2>
+      </div>
+      <div className="p-6 space-y-6">
+        {exercises.map((exercise) => {
+          const state = exerciseState[exercise.id] || {
+            userAnswer: '',
+            isCorrect: null,
+            showResult: false,
+          };
+
+          const correctWords = splitAnswer(exercise.correctAnswer);
+          const userWords = state.userAnswer ? splitAnswer(state.userAnswer) : [];
+          
+          // Ensure userWords array matches correctWords length
+          const displayWords = correctWords.map((_, index) => userWords[index] || '');
+
+          return (
+            <div
+              key={exercise.id}
+              className="border-2 border-gray-200 dark:border-gray-600 rounded-lg p-6 space-y-4"
+            >
+              <div className="mb-4">
+                <span className="text-lg font-semibold text-gray-800 dark:text-white">
+                  {exercise.question}
+                </span>
+              </div>
+              
+              {isCJK ? (
+                // Single full-width input box for CJK languages
+                <div className="w-full">
+                  <input
+                    id={`sentence-${exercise.id}-full`}
+                    type="text"
+                    value={state.userAnswer}
+                    onCompositionStart={() => {
+                      compositionStatesRef.current[`sentence-${exercise.id}-full`] = true;
+                    }}
+                    onCompositionEnd={(e) => {
+                      compositionStatesRef.current[`sentence-${exercise.id}-full`] = false;
+                      onAnswerChange(exercise.id, e.currentTarget.value);
+                    }}
+                    onChange={(e) => {
+                      onAnswerChange(exercise.id, e.target.value);
+                    }}
+                    placeholder="Enter translation..."
+                    disabled={state.showResult}
+                    className={`w-full px-4 py-3 rounded-lg border-2 text-left font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      state.showResult
+                        ? state.isCorrect
+                          ? 'bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400'
+                          : 'bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white'
+                    }`}
+                  />
+                </div>
+              ) : (
+                // Multiple word input boxes for non-CJK languages
+                <div className="flex flex-wrap gap-2 items-center">
+                  {correctWords.map((correctWord, wordIndex) => {
+                    const userWord = displayWords[wordIndex] || '';
+                    const isCorrect = userWord.toLowerCase().trim() === correctWord.toLowerCase().trim();
+                    const isFilled = userWord.trim().length > 0;
+                    const inputId = `sentence-${exercise.id}-word-${wordIndex}`;
+                    
+                    return (
+                      <div key={wordIndex} className="flex items-center gap-2">
+                        <input
+                          id={inputId}
+                          type="text"
+                          value={userWord}
+                          onChange={(e) => {
+                            const newAnswers = [...displayWords];
+                            newAnswers[wordIndex] = e.target.value.replace(/\s/g, '');
+                            onAnswerChange(exercise.id, newAnswers.join(' '));
+                            
+                            // Check if word is correct and auto-advance
+                            const cleanedValue = newAnswers[wordIndex];
+                            if (cleanedValue.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
+                              const nextIndex = wordIndex + 1;
+                              if (nextIndex < correctWords.length) {
+                                setTimeout(() => {
+                                  const nextInput = document.getElementById(`sentence-${exercise.id}-word-${nextIndex}`);
+                                  nextInput?.focus();
+                                }, 100);
+                              }
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Tab') {
+                              e.preventDefault();
+                              const nextIndex = wordIndex + 1;
+                              if (nextIndex < correctWords.length) {
+                                setTimeout(() => {
+                                  const nextInput = document.getElementById(`sentence-${exercise.id}-word-${nextIndex}`);
+                                  nextInput?.focus();
+                                }, 0);
+                              }
+                            }
+                          }}
+                          placeholder="word"
+                          disabled={state.showResult}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg border-2 text-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            state.showResult
+                              ? isCorrect
+                                ? 'bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400'
+                                : 'bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400'
+                              : isCorrect && isFilled
+                              ? 'bg-green-50 dark:bg-green-900/20 border-green-400 text-green-700 dark:text-green-400'
+                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white'
+                          }`}
+                        />
+                        {wordIndex < correctWords.length - 1 && (
+                          <span className="text-gray-400 dark:text-gray-500"> </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 mt-4">
+                {!state.showResult && (
+                  <button
+                    onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
+                    disabled={!state.userAnswer.trim()}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Check
+                  </button>
+                )}
+                {state.showResult && (
+                  <span
+                    className={`text-lg font-semibold ${
+                      state.isCorrect ? 'text-green-500' : 'text-red-500'
+                    }`}
+                  >
+                    {state.isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+                  </span>
+                )}
+                {state.showResult && !state.isCorrect && (
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Correct answer: {exercise.correctAnswer}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

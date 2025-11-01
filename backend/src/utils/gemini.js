@@ -224,12 +224,18 @@ IMPORTANT: If the phrase is already in ${targetLanguage}, still provide a transl
  * @returns {Promise<Array>} - Array of sentence exercises
  */
 export async function generateExerciseSet(words, nativeLanguage, targetLanguage) {
+  // Filter words that have translation and definitions
+  const validWords = words.filter(w => w.translation && w.definitions && w.definitions.length > 0);
+  
   const prompt = `You are a language learning exercise generator.
 
 The user's native language is ${nativeLanguage} and they are learning ${targetLanguage}.
 
 Available words from the user's vocabulary (use these to create sentences):
-${JSON.stringify(words.map(w => ({ word: w.text, translation: w.translation })))}
+${JSON.stringify(validWords.map(w => ({ 
+  word: w.translation, // Target language word
+  meaning: w.definitions[0]?.meaning || '' // Native language meaning
+})))}}
 
 Generate exactly 10 sentence translation exercises. Create natural sentences in ${nativeLanguage} using the words from the available vocabulary. The sentences should:
 - Be natural and meaningful (not just word lists)

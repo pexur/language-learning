@@ -146,7 +146,14 @@ export const handler = async (event) => {
  * @returns {string} - Hash string representing the vocabulary
  */
 function createVocabularyHash(words, phrases) {
-  const wordKeys = words.map(w => `${w.text}:${w.translation}`).sort();
+  // Use translation (target language word) and first definition meaning (native language) for hash
+  const wordKeys = words
+    .filter(w => w.translation)
+    .map(w => {
+      const nativeMeaning = w.definitions && w.definitions.length > 0 ? w.definitions[0].meaning : '';
+      return `${w.translation}:${nativeMeaning}`;
+    })
+    .sort();
   const phraseKeys = phrases.map(p => `${p.text}:${p.translation}`).sort();
   const combined = [...wordKeys, ...phraseKeys].join('|');
   
@@ -217,29 +224,48 @@ async function cacheExercises(cacheKey, exerciseData, userId, date) {
  * @returns {Object} - Exercise set with words and wordsReverse
  */
 function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage) {
+  // Filter words that have both translation (target language word) and definitions (native language meanings)
+  const validWords = words.filter(w => w.translation && w.definitions && w.definitions.length > 0);
+  
+  if (validWords.length === 0) {
+    return {
+      words: [],
+      wordsReverse: [],
+      sentences: [],
+    };
+  }
+  
   // Shuffle words to randomize selection
-  const shuffled = [...words].sort(() => Math.random() - 0.5);
+  const shuffled = [...validWords].sort(() => Math.random() - 0.5);
   
   // Select 10 words for native to target (can reuse words if needed)
   const wordsForNativeToTarget = shuffled.slice(0, Math.min(10, shuffled.length));
   // Select 10 words for target to native (can reuse or get different words)
   const wordsForTargetToNative = shuffled.slice(0, Math.min(10, shuffled.length));
   
-  // First 10: Native -> Target (user sees native word, fills target translation)
-  const nativeToTarget = wordsForNativeToTarget.map((word, index) => ({
-    id: `nt-${index + 1}`,
-    type: 'word_to_target',
-    question: word.text, // Native language word
-    correctAnswer: word.translation, // Target language translation
-  }));
+  // First 10: Native -> Target (user sees native language meaning, fills target language word)
+  // translation = target language word (corrected spelling)
+  // definitions[0].meaning = native language translation
+  const nativeToTarget = wordsForNativeToTarget.map((word, index) => {
+    const nativeMeaning = word.definitions[0]?.meaning || '';
+    return {
+      id: `nt-${index + 1}`,
+      type: 'word_to_target',
+      question: nativeMeaning, // Native language meaning from definitions
+      correctAnswer: word.translation, // Target language word
+    };
+  });
   
-  // Second 10: Target -> Native (user sees target word, fills native translation)
-  const targetToNative = wordsForTargetToNative.map((word, index) => ({
-    id: `tn-${index + 1}`,
-    type: 'word_to_native',
-    question: word.translation, // Target language word
-    correctAnswer: word.text, // Native language translation
-  }));
+  // Second 10: Target -> Native (user sees target language word, fills native language meaning)
+  const targetToNative = wordsForTargetToNative.map((word, index) => {
+    const nativeMeaning = word.definitions[0]?.meaning || '';
+    return {
+      id: `tn-${index + 1}`,
+      type: 'word_to_native',
+      question: word.translation, // Target language word
+      correctAnswer: nativeMeaning, // Native language meaning from definitions
+    };
+  });
   
   return {
     words: nativeToTarget,
