@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import dynamoDB, { PutCommand, QueryCommand } from '../../utils/dynamodb.js';
 import { generateToken, createResponse } from '../../utils/auth.js';
-import { localDB, isLocalMode } from '../../utils/localdb.js';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 
@@ -20,26 +19,18 @@ export const handler = async (event) => {
     }
 
     // Check if user already exists
-    let existingUser;
-    if (isLocalMode()) {
-      existingUser = await localDB.getUserByEmail(email);
-      if (existingUser) {
-        return createResponse(400, { error: 'User already exists' });
-      }
-    } else {
-      const result = await dynamoDB.send(
-        new QueryCommand({
-          TableName: USERS_TABLE,
-          IndexName: 'EmailIndex',
-          KeyConditionExpression: 'email = :email',
-          ExpressionAttributeValues: {
-            ':email': email,
-          },
-        })
-      );
-      if (result.Items && result.Items.length > 0) {
-        return createResponse(400, { error: 'User already exists' });
-      }
+    const result = await dynamoDB.send(
+      new QueryCommand({
+        TableName: USERS_TABLE,
+        IndexName: 'EmailIndex',
+        KeyConditionExpression: 'email = :email',
+        ExpressionAttributeValues: {
+          ':email': email,
+        },
+      })
+    );
+    if (result.Items && result.Items.length > 0) {
+      return createResponse(400, { error: 'User already exists' });
     }
 
     // Create new user
@@ -56,16 +47,12 @@ export const handler = async (event) => {
       updatedAt: Date.now(),
     };
 
-    if (isLocalMode()) {
-      await localDB.putUser(user);
-    } else {
-      await dynamoDB.send(
-        new PutCommand({
-          TableName: USERS_TABLE,
-          Item: user,
-        })
-      );
-    }
+    await dynamoDB.send(
+      new PutCommand({
+        TableName: USERS_TABLE,
+        Item: user,
+      })
+    );
 
     const token = generateToken(userId, email);
 

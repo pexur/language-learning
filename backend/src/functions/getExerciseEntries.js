@@ -1,6 +1,5 @@
 import dynamoDB, { QueryCommand, GetCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
-import { localDB, isLocalMode } from '../utils/localdb.js';
 
 const EXERCISES_TABLE = process.env.EXERCISES_TABLE;
 const USERS_TABLE = process.env.USERS_TABLE;
@@ -13,18 +12,13 @@ export const handler = async (event) => {
     }
 
     // Get user's language preferences
-    let userData;
-    if (isLocalMode()) {
-      userData = await localDB.getUser(user.userId);
-    } else {
-      const result = await dynamoDB.send(
-        new GetCommand({
-          TableName: USERS_TABLE,
-          Key: { userId: user.userId },
-        })
-      );
-      userData = result.Item;
-    }
+    const result = await dynamoDB.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userId: user.userId },
+      })
+    );
+    const userData = result.Item;
 
     if (!userData) {
       return createResponse(404, { error: 'User not found' });
@@ -33,22 +27,17 @@ export const handler = async (event) => {
     const { nativeLanguage, targetLanguage } = userData;
 
     // Get all exercises for the user
-    let exercises;
-    if (isLocalMode()) {
-      exercises = await localDB.getAllExercises(user.userId);
-    } else {
-      const result = await dynamoDB.send(
-        new QueryCommand({
-          TableName: EXERCISES_TABLE,
-          KeyConditionExpression: 'userId = :userId',
-          ExpressionAttributeValues: {
-            ':userId': user.userId,
-          },
-          ScanIndexForward: false, // Most recent first
-        })
-      );
-      exercises = result.Items || [];
-    }
+    const exercisesResult = await dynamoDB.send(
+      new QueryCommand({
+        TableName: EXERCISES_TABLE,
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': user.userId,
+        },
+        ScanIndexForward: false, // Most recent first
+      })
+    );
+    const exercises = exercisesResult.Items || [];
 
     // Filter exercises that match the user's current language preferences
     const relevantExercises = exercises.filter(exercise => {

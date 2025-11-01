@@ -1,6 +1,5 @@
 import dynamoDB, { GetCommand, PutCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
-import { localDB, isLocalMode } from '../utils/localdb.js';
 
 const EXERCISES_TABLE = process.env.EXERCISES_TABLE;
 
@@ -29,21 +28,16 @@ export const handler = async (event) => {
     }
 
     // Get the existing exercise item
-    let exerciseItem;
-    if (isLocalMode()) {
-      exerciseItem = await localDB.getExercises(exerciseId);
-    } else {
-      const result = await dynamoDB.send(
-        new GetCommand({
-          TableName: EXERCISES_TABLE,
-          Key: {
-            userId: user.userId,
-            exerciseId: exerciseId,
-          },
-        })
-      );
-      exerciseItem = result.Item;
-    }
+    const result = await dynamoDB.send(
+      new GetCommand({
+        TableName: EXERCISES_TABLE,
+        Key: {
+          userId: user.userId,
+          exerciseId: exerciseId,
+        },
+      })
+    );
+    const exerciseItem = result.Item;
 
     if (!exerciseItem) {
       return createResponse(404, { error: 'Exercise not found' });
@@ -63,16 +57,12 @@ export const handler = async (event) => {
       updatedAt: Date.now(),
     };
 
-    if (isLocalMode()) {
-      await localDB.saveExercises(updatedItem);
-    } else {
-      await dynamoDB.send(
-        new PutCommand({
-          TableName: EXERCISES_TABLE,
-          Item: updatedItem,
-        })
-      );
-    }
+    await dynamoDB.send(
+      new PutCommand({
+        TableName: EXERCISES_TABLE,
+        Item: updatedItem,
+      })
+    );
 
     return createResponse(200, {
       success: true,

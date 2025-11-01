@@ -1,6 +1,5 @@
 import dynamoDB, { QueryCommand } from '../../utils/dynamodb.js';
 import { generateToken, createResponse } from '../../utils/auth.js';
-import { localDB, isLocalMode } from '../../utils/localdb.js';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 
@@ -14,29 +13,21 @@ export const handler = async (event) => {
     }
 
     // Find user by email
-    let user;
-    if (isLocalMode()) {
-      user = await localDB.getUserByEmail(email);
-      if (!user) {
-        return createResponse(404, { error: 'User not found' });
-      }
-    } else {
-      const result = await dynamoDB.send(
-        new QueryCommand({
-          TableName: USERS_TABLE,
-          IndexName: 'EmailIndex',
-          KeyConditionExpression: 'email = :email',
-          ExpressionAttributeValues: {
-            ':email': email,
-          },
-        })
-      );
+    const result = await dynamoDB.send(
+      new QueryCommand({
+        TableName: USERS_TABLE,
+        IndexName: 'EmailIndex',
+        KeyConditionExpression: 'email = :email',
+        ExpressionAttributeValues: {
+          ':email': email,
+        },
+      })
+    );
 
-      if (!result.Items || result.Items.length === 0) {
-        return createResponse(404, { error: 'User not found' });
-      }
-      user = result.Items[0];
+    if (!result.Items || result.Items.length === 0) {
+      return createResponse(404, { error: 'User not found' });
     }
+    const user = result.Items[0];
 
     const token = generateToken(user.userId, user.email);
 

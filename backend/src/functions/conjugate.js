@@ -1,7 +1,6 @@
 import { conjugateFrenchVerb } from '../utils/gemini.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
 import dynamoDB, { GetCommand, PutCommand } from '../utils/dynamodb.js';
-import { localDB, isLocalMode } from '../utils/localdb.js';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 const CONJUGATIONS_TABLE = process.env.CONJUGATIONS_TABLE;
@@ -15,18 +14,13 @@ export const handler = async (event) => {
     }
 
     // Get user's target language
-    let userData;
-    if (isLocalMode()) {
-      userData = await localDB.getUser(authUser.userId);
-    } else {
-      const userResult = await dynamoDB.send(
-        new GetCommand({
-          TableName: USERS_TABLE,
-          Key: { userId: authUser.userId },
-        })
-      );
-      userData = userResult.Item;
-    }
+    const userResult = await dynamoDB.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userId: authUser.userId },
+      })
+    );
+    const userData = userResult.Item;
 
     if (!userData) {
       return createResponse(404, { error: 'User not found' });
@@ -90,10 +84,6 @@ export const handler = async (event) => {
  * @returns {Promise<Object|null>} - Cached conjugation data or null if not found
  */
 async function getCachedConjugation(verb) {
-  if (isLocalMode()) {
-    return await localDB.getConjugation(verb);
-  }
-
   const result = await dynamoDB.send(
     new GetCommand({
       TableName: CONJUGATIONS_TABLE,
@@ -115,11 +105,6 @@ async function cacheConjugation(verb, conjugationData) {
     conjugationData,
     createdAt: Date.now(),
   };
-
-  if (isLocalMode()) {
-    await localDB.saveConjugation(item);
-    return;
-  }
 
   await dynamoDB.send(
     new PutCommand({

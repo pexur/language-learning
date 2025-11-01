@@ -1,6 +1,5 @@
 import dynamoDB, { QueryCommand } from '../../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../../utils/auth.js';
-import { localDB, isLocalMode } from '../../utils/localdb.js';
 
 const WORDS_TABLE = process.env.WORDS_TABLE;
 
@@ -11,23 +10,18 @@ export const handler = async (event) => {
       return createResponse(401, { error: 'Unauthorized' });
     }
 
-    let words;
-    if (isLocalMode()) {
-      words = await localDB.getWords(user.userId);
-    } else {
-      const result = await dynamoDB.send(
-        new QueryCommand({
-          TableName: WORDS_TABLE,
-          IndexName: 'UserCreatedAtIndex',
-          KeyConditionExpression: 'userId = :userId',
-          ExpressionAttributeValues: {
-            ':userId': user.userId,
-          },
-          ScanIndexForward: false, // Most recent first
-        })
-      );
-      words = result.Items || [];
-    }
+    const result = await dynamoDB.send(
+      new QueryCommand({
+        TableName: WORDS_TABLE,
+        IndexName: 'UserCreatedAtIndex',
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': user.userId,
+        },
+        ScanIndexForward: false, // Most recent first
+      })
+    );
+    const words = result.Items || [];
 
     return createResponse(200, { words });
   } catch (error) {

@@ -1,6 +1,5 @@
 import dynamoDB, { QueryCommand, GetCommand, PutCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
-import { localDB, isLocalMode } from '../utils/localdb.js';
 import { generateExerciseSet } from '../utils/gemini.js';
 
 const WORDS_TABLE = process.env.WORDS_TABLE;
@@ -16,18 +15,13 @@ export const handler = async (event) => {
     }
 
     // Get user's language preferences
-    let userData;
-    if (isLocalMode()) {
-      userData = await localDB.getUser(user.userId);
-    } else {
-      const userResult = await dynamoDB.send(
-        new GetCommand({
-          TableName: USERS_TABLE,
-          Key: { userId: user.userId },
-        })
-      );
-      userData = userResult.Item;
-    }
+    const userResult = await dynamoDB.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userId: user.userId },
+      })
+    );
+    const userData = userResult.Item;
 
     if (!userData) {
       return createResponse(404, { error: 'User not found' });
@@ -36,40 +30,33 @@ export const handler = async (event) => {
     const { nativeLanguage, targetLanguage } = userData;
 
     // Fetch all words and phrases for the user
-    let words, phrases;
+    const [wordsResult, phrasesResult] = await Promise.all([
+      dynamoDB.send(
+        new QueryCommand({
+          TableName: WORDS_TABLE,
+          IndexName: 'UserCreatedAtIndex',
+          KeyConditionExpression: 'userId = :userId',
+          ExpressionAttributeValues: {
+            ':userId': user.userId,
+          },
+          ScanIndexForward: false,
+        })
+      ),
+      dynamoDB.send(
+        new QueryCommand({
+          TableName: PHRASES_TABLE,
+          IndexName: 'UserCreatedAtIndex',
+          KeyConditionExpression: 'userId = :userId',
+          ExpressionAttributeValues: {
+            ':userId': user.userId,
+          },
+          ScanIndexForward: false,
+        })
+      ),
+    ]);
     
-    if (isLocalMode()) {
-      words = await localDB.getWords(user.userId);
-      phrases = await localDB.getPhrases(user.userId);
-    } else {
-      const [wordsResult, phrasesResult] = await Promise.all([
-        dynamoDB.send(
-          new QueryCommand({
-            TableName: WORDS_TABLE,
-            IndexName: 'UserCreatedAtIndex',
-            KeyConditionExpression: 'userId = :userId',
-            ExpressionAttributeValues: {
-              ':userId': user.userId,
-            },
-            ScanIndexForward: false,
-          })
-        ),
-        dynamoDB.send(
-          new QueryCommand({
-            TableName: PHRASES_TABLE,
-            IndexName: 'UserCreatedAtIndex',
-            KeyConditionExpression: 'userId = :userId',
-            ExpressionAttributeValues: {
-              ':userId': user.userId,
-            },
-            ScanIndexForward: false,
-          })
-        ),
-      ]);
-      
-      words = wordsResult.Items || [];
-      phrases = phrasesResult.Items || [];
-    }
+    const words = wordsResult.Items || [];
+    const phrases = phrasesResult.Items || [];
 
     // Filter words and phrases that have translations
     const validWords = words.filter(w => w.translation);
@@ -179,11 +166,6 @@ function createVocabularyHash(words, phrases) {
  * @returns {Promise<Object|null>} - Cached exercise item or null if not found
  */
 async function getCachedExerciseItem(cacheKey) {
-  if (isLocalMode()) {
-    const exercise = await localDB.getExercises(cacheKey);
-    return exercise || null;
-  }
-
   const result = await dynamoDB.send(
     new GetCommand({
       TableName: EXERCISES_TABLE,
@@ -216,12 +198,6 @@ async function cacheExercises(cacheKey, exerciseData, userId, date) {
 
   console.log('Caching exercise item:', JSON.stringify(item, null, 2));
   console.log('EXERCISES_TABLE:', EXERCISES_TABLE);
-
-  if (isLocalMode()) {
-    await localDB.saveExercises(item);
-    console.log('Cached exercises in local DB');
-    return;
-  }
 
   await dynamoDB.send(
     new PutCommand({

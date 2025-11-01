@@ -1,6 +1,5 @@
 import dynamoDB, { GetCommand } from '../../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../../utils/auth.js';
-import { localDB, isLocalMode } from '../../utils/localdb.js';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 
@@ -13,18 +12,13 @@ export const handler = async (event) => {
     }
 
     // Fetch user details
-    let user;
-    if (isLocalMode()) {
-      user = await localDB.getUser(authUser.userId);
-    } else {
-      const result = await dynamoDB.send(
-        new GetCommand({
-          TableName: USERS_TABLE,
-          Key: { userId: authUser.userId },
-        })
-      );
-      user = result.Item;
-    }
+    const result = await dynamoDB.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userId: authUser.userId },
+      })
+    );
+    const user = result.Item;
 
     if (!user) {
       return createResponse(404, { error: 'User not found' });

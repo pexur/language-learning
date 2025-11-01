@@ -1,6 +1,5 @@
 import dynamoDB, { DeleteCommand } from '../../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../../utils/auth.js';
-import { localDB, isLocalMode } from '../../utils/localdb.js';
 
 const PHRASES_TABLE = process.env.PHRASES_TABLE;
 
@@ -17,19 +16,15 @@ export const handler = async (event) => {
       return createResponse(400, { error: 'Phrase ID is required' });
     }
 
-    if (isLocalMode()) {
-      await localDB.deletePhrase(user.userId, id);
-    } else {
-      await dynamoDB.send(
-        new DeleteCommand({
-          TableName: PHRASES_TABLE,
-          Key: {
-            userId: user.userId,
-            phraseId: id,
-          },
-        })
-      );
-    }
+    await dynamoDB.send(
+      new DeleteCommand({
+        TableName: PHRASES_TABLE,
+        Key: {
+          userId: user.userId,
+          phraseId: id,
+        },
+      })
+    );
 
     return createResponse(200, { message: 'Phrase deleted successfully' });
   } catch (error) {
