@@ -1,7 +1,9 @@
-import dynamoDB, { GetCommand, PutCommand } from '../utils/dynamodb.js';
+import dynamoDB, { GetCommand, PutCommand, UpdateCommand } from '../utils/dynamodb.js';
 import { getUserFromEvent, createResponse } from '../utils/auth.js';
 
 const EXERCISES_TABLE = process.env.EXERCISES_TABLE;
+const WORDS_TABLE = process.env.WORDS_TABLE;
+const PHRASES_TABLE = process.env.PHRASES_TABLE;
 
 export const handler = async (event) => {
   try {
@@ -49,6 +51,85 @@ export const handler = async (event) => {
       ...existingResponses,
       ...responses, // New responses override existing ones
     };
+
+    // Update correctAnswerCount for words/phrases when answers are correct
+    const exerciseData = exerciseItem.exerciseData || {};
+    const allExercises = [
+      ...(exerciseData.words || []),
+      ...(exerciseData.wordsReverse || []),
+      ...(exerciseData.sentences || []),
+    ];
+
+    // Track which words/phrases need their counts incremented
+    const wordsToUpdate = new Set();
+    const phrasesToUpdate = new Set();
+
+    // Check each response in the new responses
+    for (const [exerciseId, responseData] of Object.entries(responses)) {
+      const exercise = allExercises.find(e => e.id === exerciseId);
+      if (!exercise || !exercise.sources) continue;
+
+      const previousResponse = existingResponses[exerciseId];
+      const wasAlreadyCorrect = previousResponse?.isCorrect === true;
+      const isNowCorrect = responseData.isCorrect === true;
+
+      // Only increment if this is a new correct answer (wasn't already correct)
+      if (isNowCorrect && !wasAlreadyCorrect) {
+        for (const source of exercise.sources) {
+          if (source.type === 'word') {
+            wordsToUpdate.add(source.id);
+          } else if (source.type === 'phrase') {
+            phrasesToUpdate.add(source.id);
+          }
+        }
+      }
+    }
+
+    // Update words
+    for (const wordId of wordsToUpdate) {
+      try {
+        await dynamoDB.send(
+          new UpdateCommand({
+            TableName: WORDS_TABLE,
+            Key: { 
+              userId: user.userId,
+              wordId: wordId 
+            },
+            UpdateExpression: 'ADD correctAnswerCount :one SET updatedAt = :now',
+            ExpressionAttributeValues: {
+              ':one': 1,
+              ':now': Date.now(),
+            },
+          })
+        );
+      } catch (error) {
+        console.error(`Failed to update correctAnswerCount for word ${wordId}:`, error);
+        // Continue with other updates even if one fails
+      }
+    }
+
+    // Update phrases
+    for (const phraseId of phrasesToUpdate) {
+      try {
+        await dynamoDB.send(
+          new UpdateCommand({
+            TableName: PHRASES_TABLE,
+            Key: { 
+              userId: user.userId,
+              phraseId: phraseId 
+            },
+            UpdateExpression: 'ADD correctAnswerCount :one SET updatedAt = :now',
+            ExpressionAttributeValues: {
+              ':one': 1,
+              ':now': Date.now(),
+            },
+          })
+        );
+      } catch (error) {
+        console.error(`Failed to update correctAnswerCount for phrase ${phraseId}:`, error);
+        // Continue with other updates even if one fails
+      }
+    }
 
     // Update the exercise item
     const updatedItem = {
