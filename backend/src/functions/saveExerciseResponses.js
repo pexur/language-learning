@@ -85,7 +85,8 @@ export const handler = async (event) => {
       }
     }
 
-    // Update words
+    // Update words - increment correctAnswerCount by 1
+    // ADD operation increments the value (or initializes to 1 if field doesn't exist)
     for (const wordId of wordsToUpdate) {
       try {
         await dynamoDB.send(
@@ -108,7 +109,8 @@ export const handler = async (event) => {
       }
     }
 
-    // Update phrases
+    // Update phrases - increment correctAnswerCount by 1
+    // ADD operation increments the value (or initializes to 1 if field doesn't exist)
     for (const phraseId of phrasesToUpdate) {
       try {
         await dynamoDB.send(
