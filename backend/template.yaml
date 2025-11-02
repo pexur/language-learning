@@ -392,9 +392,15 @@ Resources:
       Environment:
         Variables:
           EXERCISES_TABLE: !Ref ExercisesTable
+          WORDS_TABLE: !Ref WordsTable
+          PHRASES_TABLE: !Ref PhrasesTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ExercisesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PhrasesTable
       Events:
         Api:
           Type: HttpApi

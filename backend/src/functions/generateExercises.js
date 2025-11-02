@@ -103,6 +103,11 @@ export const handler = async (event) => {
     if (validWords.length > 0) {
       try {
         sentenceExercises = await generateExerciseSet(validWords, nativeLanguage, targetLanguage);
+        // Add direction field to sentence exercises
+        sentenceExercises = sentenceExercises.map(exercise => ({
+          ...exercise,
+          direction: 'sentence',
+        }));
       } catch (error) {
         console.error('Failed to generate sentence exercises:', error);
         // Continue without sentences if generation fails
@@ -253,6 +258,11 @@ function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage)
       type: 'word_to_target',
       question: nativeMeaning, // Native language meaning from definitions
       correctAnswer: word.translation, // Target language word
+      sources: [{
+        id: word.wordId,
+        type: 'word'
+      }],
+      direction: 'native_to_target',
     };
   });
   
@@ -264,6 +274,11 @@ function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage)
       type: 'word_to_native',
       question: word.translation, // Target language word
       correctAnswer: nativeMeaning, // Native language meaning from definitions
+      sources: [{
+        id: word.wordId,
+        type: 'word'
+      }],
+      direction: 'target_to_native',
     };
   });
   
