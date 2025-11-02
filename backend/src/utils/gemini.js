@@ -233,6 +233,7 @@ The user's native language is ${nativeLanguage} and they are learning ${targetLa
 
 Available words from the user's vocabulary (use these to create sentences):
 ${JSON.stringify(validWords.map(w => ({ 
+  wordId: w.wordId, // Word ID for tracking
   word: w.translation, // Target language word
   meaning: w.definitions[0]?.meaning || '' // Native language meaning
 })))}}
@@ -250,15 +251,17 @@ Return ONLY a JSON object in this exact format:
       "id": "s1",
       "type": "sentence",
       "question": "How are you?",
-      "correctAnswer": "¿Cómo estás?",
-      "hint": "Common greeting"
+      "correctAnswer": "?C?mo est?s?",
+      "hint": "Common greeting",
+      "sources": [{"id": "word123", "type": "word"}]
     },
     {
       "id": "s2",
       "type": "sentence",
       "question": "I like apples.",
       "correctAnswer": "Me gustan las manzanas.",
-      "hint": "Expressing preference"
+      "hint": "Expressing preference",
+      "sources": [{"id": "word456", "type": "word"}]
     }
   ]
 }
@@ -269,6 +272,9 @@ RULES:
 - Use words from the available vocabulary when creating sentences
 - The correctAnswer should be the translation in ${targetLanguage}
 - Keep sentences simple and appropriate for language learners
+- The "sources" field must include the wordId(s) of vocabulary words used in the sentence
+- Each source object should have "id" (the wordId) and "type" (always "word")
+- Include all vocabulary words that appear in the target language translation
 - Return ONLY the JSON object with the "sentences" array, no additional text`;
 
   const response = await invokeGemini(prompt, 4000);
@@ -277,8 +283,13 @@ RULES:
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(response);
     
-    // Return only the sentences array
-    return parsed.sentences || [];
+    // Add direction field to each sentence exercise if not present
+    const sentences = (parsed.sentences || []).map(sentence => ({
+      ...sentence,
+      direction: sentence.direction || 'sentence'
+    }));
+    
+    return sentences;
   } catch (error) {
     console.error('Failed to parse Gemini response:', error);
     throw new Error('Invalid response format from exercise generation service');

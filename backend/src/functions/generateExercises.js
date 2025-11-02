@@ -217,6 +217,7 @@ async function cacheExercises(cacheKey, exerciseData, userId, date) {
 
 /**
  * Generate simple translation exercises from randomly selected words
+ * Uses spaced repetition: prioritizes words with lower correctAnswerCount
  * @param {Array} words - Array of words with translations
  * @param {Array} phrases - Array of phrases with translations (not used for first two parts)
  * @param {string} nativeLanguage - Native language
@@ -235,13 +236,32 @@ function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage)
     };
   }
   
-  // Shuffle words to randomize selection
-  const shuffled = [...validWords].sort(() => Math.random() - 0.5);
+  // Sort words by correctAnswerCount (ascending) to prioritize less familiar words
+  // Words without correctAnswerCount are treated as 0 (never answered correctly)
+  const sortedByFamiliarity = [...validWords].sort((a, b) => {
+    const countA = a.correctAnswerCount || 0;
+    const countB = b.correctAnswerCount || 0;
+    
+    // Primary sort: by correctAnswerCount (ascending - less familiar first)
+    if (countA !== countB) {
+      return countA - countB;
+    }
+    
+    // Secondary sort: random for words with same count
+    return Math.random() - 0.5;
+  });
   
-  // Select 10 words for native to target (can reuse words if needed)
-  const wordsForNativeToTarget = shuffled.slice(0, Math.min(10, shuffled.length));
-  // Select 10 words for target to native (can reuse or get different words)
-  const wordsForTargetToNative = shuffled.slice(0, Math.min(10, shuffled.length));
+  // Select words: prioritize less familiar ones, but add some randomness
+  // Take top 70% from sorted list and bottom 30% from random selection
+  const priorityCount = Math.ceil(sortedByFamiliarity.length * 0.7);
+  const priorityWords = sortedByFamiliarity.slice(0, priorityCount);
+  const randomWords = sortedByFamiliarity.slice(priorityCount).sort(() => Math.random() - 0.5);
+  const combinedPool = [...priorityWords, ...randomWords];
+  
+  // Select 10 words for native to target
+  const wordsForNativeToTarget = combinedPool.slice(0, Math.min(10, combinedPool.length));
+  // Select 10 words for target to native (same pool, same priority)
+  const wordsForTargetToNative = combinedPool.slice(0, Math.min(10, combinedPool.length));
   
   // First 10: Native -> Target (user sees native language meaning, fills target language word)
   // translation = target language word (corrected spelling)
@@ -253,6 +273,11 @@ function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage)
       type: 'word_to_target',
       question: nativeMeaning, // Native language meaning from definitions
       correctAnswer: word.translation, // Target language word
+      sources: [{
+        id: word.wordId,
+        type: 'word'
+      }],
+      direction: 'native_to_target'
     };
   });
   
@@ -264,6 +289,11 @@ function generateSimpleExercises(words, phrases, nativeLanguage, targetLanguage)
       type: 'word_to_native',
       question: word.translation, // Target language word
       correctAnswer: nativeMeaning, // Native language meaning from definitions
+      sources: [{
+        id: word.wordId,
+        type: 'word'
+      }],
+      direction: 'target_to_native'
     };
   });
   
