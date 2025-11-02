@@ -15,6 +15,7 @@ export interface Word {
   isTranslating?: boolean;
   createdAt: number;
   updatedAt?: number;
+  correctAnswerCount?: number;
 }
 
 export interface Phrase {
@@ -25,6 +26,7 @@ export interface Phrase {
   isTranslating?: boolean;
   createdAt: number;
   updatedAt?: number;
+  correctAnswerCount?: number;
 }
 
 export interface Exercise {
@@ -33,6 +35,9 @@ export interface Exercise {
   question: string;
   correctAnswer: string;
   hint?: string;
+  sourceType?: 'word' | 'phrase';
+  sourceId?: string;
+  direction?: 'native_to_target' | 'target_to_native' | 'sentence';
 }
 
 export interface ExerciseSet {
