@@ -35,8 +35,10 @@ export interface Exercise {
   question: string;
   correctAnswer: string;
   hint?: string;
-  sourceType?: 'word' | 'phrase';
-  sourceId?: string;
+  sources?: Array<{
+    id: string;
+    type: 'word' | 'phrase';
+  }>;
   direction?: 'native_to_target' | 'target_to_native' | 'sentence';
 }
 
