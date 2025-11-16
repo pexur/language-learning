@@ -1,0 +1,97 @@
+name: Auto Create Pull Request
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract branch info
+        id: branch_info
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          # Extract type (feature/bugfix/hotfix)
+          BRANCH_TYPE=$(echo "$BRANCH_NAME" | cut -d'/' -f1)
+          # Extract description from branch name
+          BRANCH_DESC=$(echo "$BRANCH_NAME" | cut -d'/' -f2- | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
+
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "branch_type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+          echo "branch_desc=$BRANCH_DESC" >> $GITHUB_OUTPUT
+
+      - name: Check if PR already exists
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_EXISTS=$(gh pr list --head "${{ steps.branch_info.outputs.branch_name }}" --json number --jq 'length')
+          echo "pr_exists=$PR_EXISTS" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.check_pr.outputs.pr_exists == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH_TYPE="${{ steps.branch_info.outputs.branch_type }}"
+          BRANCH_DESC="${{ steps.branch_info.outputs.branch_desc }}"
+
+          # Capitalize first letter of type
+          TYPE_CAPITALIZED=$(echo "$BRANCH_TYPE" | sed 's/\b\(.\)/\u\1/g')
+
+          # Create PR title
+          PR_TITLE="[$TYPE_CAPITALIZED] $BRANCH_DESC"
+
+          # Create PR body
+          PR_BODY="## Description
+This PR was automatically created from branch \`${{ steps.branch_info.outputs.branch_name }}\`.
+
+## Changes
+<!-- Please describe your changes here -->
+
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Code refactoring
+
+## Test Plan
+<!-- Describe how you tested your changes -->
+- [ ] Tested locally
+- [ ] Added/updated tests
+- [ ] Verified on different screen sizes (if UI change)
+- [ ] Checked both light and dark modes (if UI change)
+
+## Screenshots (if applicable)
+<!-- Add screenshots here if this is a UI change -->
+
+---
+🤖 Auto-created by GitHub Actions"
+
+          gh pr create \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --base main \
+            --head "${{ steps.branch_info.outputs.branch_name }}"
+
+      - name: Comment on existing PR
+        if: steps.check_pr.outputs.pr_exists != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Pull request already exists for this branch. Skipping PR creation."
