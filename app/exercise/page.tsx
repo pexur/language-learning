@@ -119,12 +119,12 @@ export default function ExercisePage() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-8 lg:pl-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+      <div className="container mx-auto px-4 py-6 md:py-8 lg:pl-8">
+        <header className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
             Practice Exercises
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
             Click on an entry to practice exercises for that date
           </p>
         </header>
@@ -133,12 +133,12 @@ export default function ExercisePage() {
           <button
             onClick={generateExercises}
             disabled={generating}
-            className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`w-full sm:w-auto px-6 py-3 md:px-8 md:py-4 text-base md:text-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 min-h-[48px] ${
               generating ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {generating ? (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -146,13 +146,14 @@ export default function ExercisePage() {
                 Generating...
               </span>
             ) : (
-              'Generate Exercises for Today'
+              <span className="hidden sm:inline">Generate Exercises for Today</span>
+              <span className="sm:hidden">Generate Today's Exercises</span>
             )}
           </button>
         </div>
 
         {entries.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 text-center">
             <div className="text-6xl mb-4">📚</div>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
               No Exercises Yet
@@ -163,8 +164,8 @@ export default function ExercisePage() {
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+            <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
                 Exercise History
               </h2>
             </div>
@@ -173,26 +174,26 @@ export default function ExercisePage() {
                 <button
                   key={entry.date}
                   onClick={() => handleEntryClick(entry.date)}
-                  className="w-full p-6 text-left hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full p-4 md:p-6 text-left hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors active:bg-indigo-100 dark:active:bg-gray-600 min-h-[72px]"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                        <h3 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
                           {formatDate(entry.date)}
                         </h3>
                         {entry.hasResponses && (
-                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium rounded-full">
+                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs md:text-sm font-medium rounded-full w-fit">
                             {entry.responseCount} responses
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                         {new Date(entry.createdAt).toLocaleString()}
                       </p>
                     </div>
                     <svg
-                      className="w-5 h-5 text-gray-400"
+                      className="w-5 h-5 md:w-6 md:h-6 text-gray-400 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
