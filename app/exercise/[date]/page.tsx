@@ -158,26 +158,26 @@ export default function ExerciseDatePage() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-8 lg:pl-8">
-        <header className="mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 lg:pl-8">
+        <header className="mb-6 md:mb-8">
           <button
             onClick={() => router.push('/exercise')}
-            className="mb-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-2"
+            className="mb-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-2 min-h-[44px] px-2 -ml-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Exercise List
           </button>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
             Practice Exercises
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
             {formatDate(date)}
           </p>
         </header>
 
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Section 1: Native to Target */}
           <SimpleTranslationTable
             title={`Translate from ${user.nativeLanguage} to ${user.targetLanguage}`}
@@ -245,22 +245,22 @@ function SimpleTranslationTable({
 }: SimpleTranslationTableProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+      <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
           {title}
         </h2>
       </div>
-      <div className="p-6">
+      <div className="p-4 md:p-6 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <th className="px-3 md:px-6 py-3 md:py-4 text-left text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300">
                 {leftLanguage}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <th className="px-3 md:px-6 py-3 md:py-4 text-left text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300">
                 {rightLanguage}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-24">
+              <th className="px-3 md:px-6 py-3 md:py-4 text-left text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300 w-24 md:w-32">
                 Result
               </th>
             </tr>
@@ -278,18 +278,18 @@ function SimpleTranslationTable({
                   key={exercise.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <td className="px-6 py-4">
-                    <span className="text-lg font-semibold text-gray-800 dark:text-white">
+                  <td className="px-3 md:px-6 py-3 md:py-4">
+                    <span className="text-base md:text-lg font-semibold text-gray-800 dark:text-white">
                       {exercise.question}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 md:px-6 py-3 md:py-4">
                     <input
                       type="text"
                       value={state.userAnswer}
                       onChange={(e) => onAnswerChange(exercise.id, e.target.value)}
                       placeholder="Enter translation..."
-                      className={`w-full px-4 py-2 rounded-lg border-2 focus:outline-none transition-colors ${
+                      className={`w-full px-3 md:px-4 py-3 text-base md:text-lg rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors min-h-[48px] ${
                         state.showResult
                           ? state.isCorrect
                             ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400'
@@ -299,15 +299,15 @@ function SimpleTranslationTable({
                       disabled={state.showResult}
                     />
                     {state.showResult && !state.isCorrect && (
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-2 text-xs md:text-sm text-gray-600 dark:text-gray-400">
                         Correct: {exercise.correctAnswer}
                       </p>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 md:px-6 py-3 md:py-4">
                     {state.showResult && (
                       <span
-                        className={`text-2xl ${
+                        className={`text-xl md:text-2xl ${
                           state.isCorrect ? 'text-green-500' : 'text-red-500'
                         }`}
                       >
@@ -318,7 +318,7 @@ function SimpleTranslationTable({
                       <button
                         onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
                         disabled={!state.userAnswer.trim()}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 md:px-4 py-3 text-sm md:text-base bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                       >
                         Check
                       </button>
@@ -357,21 +357,25 @@ function SentenceTranslationSection({
   // Track composition state for each input to handle IME properly
   const compositionStatesRef = useRef<Record<string, boolean>>({});
   
-  // Function to split answer into words
-  const splitAnswer = (answer: string): string[] => {
-    // Split by spaces for all languages
-    return answer.split(/\s+/).filter(w => w.length > 0);
+  // Function to handle word array - now preserves empty positions
+  const getWordArray = (answer: string, correctWords: string[]): string[] => {
+    if (!answer) return correctWords.map(() => '');
+    // Split by single space to preserve empty positions
+    const words = answer.split(' ');
+    // Pad or trim to match correct word count
+    const result = correctWords.map((_, index) => words[index] || '');
+    return result;
   };
 
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+      <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
           {title}
         </h2>
       </div>
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {exercises.map((exercise) => {
           const state = exerciseState[exercise.id] || {
             userAnswer: '',
@@ -379,19 +383,16 @@ function SentenceTranslationSection({
             showResult: false,
           };
 
-          const correctWords = splitAnswer(exercise.correctAnswer);
-          const userWords = state.userAnswer ? splitAnswer(state.userAnswer) : [];
-          
-          // Ensure userWords array matches correctWords length
-          const displayWords = correctWords.map((_, index) => userWords[index] || '');
+          const correctWords = exercise.correctAnswer.split(/\s+/).filter(w => w.length > 0);
+          const displayWords = getWordArray(state.userAnswer, correctWords);
 
           return (
             <div
               key={exercise.id}
-              className="border-2 border-gray-200 dark:border-gray-600 rounded-lg p-6 space-y-4"
+              className="border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 md:p-6 space-y-4"
             >
-              <div className="mb-4">
-                <span className="text-lg font-semibold text-gray-800 dark:text-white">
+              <div className="mb-3 md:mb-4">
+                <span className="text-base md:text-lg font-semibold text-gray-800 dark:text-white">
                   {exercise.question}
                 </span>
               </div>
@@ -415,7 +416,7 @@ function SentenceTranslationSection({
                     }}
                     placeholder="Enter translation..."
                     disabled={state.showResult}
-                    className={`w-full px-4 py-3 rounded-lg border-2 text-left font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    className={`w-full px-4 py-3 md:py-4 text-base md:text-lg rounded-lg border-2 text-left font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[48px] ${
                       state.showResult
                         ? state.isCorrect
                           ? 'bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400'
@@ -434,7 +435,7 @@ function SentenceTranslationSection({
                     const inputId = `sentence-${exercise.id}-word-${wordIndex}`;
                     
                     return (
-                      <div key={wordIndex} className="flex items-center gap-2">
+                      <div key={wordIndex} className="flex items-center gap-1 md:gap-2">
                         <input
                           id={inputId}
                           type="text"
@@ -443,7 +444,7 @@ function SentenceTranslationSection({
                             const newAnswers = [...displayWords];
                             newAnswers[wordIndex] = e.target.value.replace(/\s/g, '');
                             onAnswerChange(exercise.id, newAnswers.join(' '));
-                            
+
                             // Check if word is correct and auto-advance
                             const cleanedValue = newAnswers[wordIndex];
                             if (cleanedValue.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
@@ -470,7 +471,7 @@ function SentenceTranslationSection({
                           }}
                           placeholder="word"
                           disabled={state.showResult}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg border-2 text-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          className={`min-w-[80px] md:min-w-[90px] w-auto max-w-[140px] px-3 md:px-4 py-3 md:py-3 text-base md:text-lg rounded-lg border-2 text-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[48px] ${
                             state.showResult
                               ? isCorrect
                                 ? 'bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400'
@@ -481,7 +482,7 @@ function SentenceTranslationSection({
                           }`}
                         />
                         {wordIndex < correctWords.length - 1 && (
-                          <span className="text-gray-400 dark:text-gray-500"> </span>
+                          <span className="text-gray-400 dark:text-gray-500 hidden md:inline"> </span>
                         )}
                       </div>
                     );
@@ -489,19 +490,19 @@ function SentenceTranslationSection({
                 </div>
               )}
 
-              <div className="flex items-center gap-4 mt-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mt-4">
                 {!state.showResult && (
                   <button
                     onClick={() => onCheckAnswer(exercise.id, exercise.correctAnswer)}
                     disabled={!state.userAnswer.trim()}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 md:px-8 md:py-3 text-base md:text-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
-                    Check
+                    Check Answer
                   </button>
                 )}
                 {state.showResult && (
                   <span
-                    className={`text-lg font-semibold ${
+                    className={`text-base md:text-lg font-semibold ${
                       state.isCorrect ? 'text-green-500' : 'text-red-500'
                     }`}
                   >
@@ -509,7 +510,7 @@ function SentenceTranslationSection({
                   </span>
                 )}
                 {state.showResult && !state.isCorrect && (
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm md:text-base text-gray-600 dark:text-gray-400">
                     Correct answer: {exercise.correctAnswer}
                   </span>
                 )}
