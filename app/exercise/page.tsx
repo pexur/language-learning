@@ -146,8 +146,10 @@ export default function ExercisePage() {
                 Generating...
               </span>
             ) : (
-              <span className="hidden sm:inline">Generate Exercises for Today</span>
-              <span className="sm:hidden">Generate Today's Exercises</span>
+              <>
+                <span className="hidden sm:inline">Generate Exercises for Today</span>
+                <span className="sm:hidden">Generate Today's Exercises</span>
+              </>
             )}
           </button>
         </div>
